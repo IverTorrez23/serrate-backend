@@ -56,13 +56,36 @@ class BilleteraTransaccionController extends Controller
 
         return new BilleteraTransaccionCollection($billeteraTransaccion);
     }
-    public function listadoPorBilletera(Request $request, $fechaIni, $fechaFin,$billeteraId)
+    public function listadoPorBilletera(Request $request, $fechaIni, $fechaFin, $billeteraId)
     {
         $ini = Carbon::parse(urldecode($fechaIni))->startOfDay();   // 2025-10-18 00:00:00
         $fin = Carbon::parse(urldecode($fechaFin))->endOfDay();     // 2025-10-18 23:59:59
         $query = BilleteraTransaccion::active()
             ->where('billetera_id', $billeteraId)
             ->whereBetween('fecha_transaccion', [$ini, $fin]);
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $billeteraTransaccion = $query->paginate($perPage);
+        return new BilleteraTransaccionCollection($billeteraTransaccion);
+    }
+    public function DepBilleteraDesdeAdmin(Request $request)
+    {
+        
+        $query = BilleteraTransaccion::active()
+            ->where('glosa', GlosaTransaccion::CREDITO_DEPOSITO_A_BILLETERA_FROM_ADMIN);
+            
 
         // Manejo de búsqueda
         if ($request->has('search')) {
@@ -93,7 +116,7 @@ class BilleteraTransaccionController extends Controller
      */
     public function store(StoreBilleteraTransaccionRequest $request)
     {
-        if (Auth::user()->tipo != TipoUsuario::ABOGADO_INDEPENDIENTE && Auth::user()->tipo != TipoUsuario::ABOGADO_LIDER) {
+        if (Auth::user()->tipo != TipoUsuario::ABOGADO_INDEPENDIENTE && Auth::user()->tipo != TipoUsuario::ABOGADO_LIDER && Auth::user()->tipo != TipoUsuario::ADMINISTRADOR) {
             return response()->json([
                 'message' => 'Usted no tiene permiso para esta acción',
                 'data' => null
@@ -101,11 +124,16 @@ class BilleteraTransaccionController extends Controller
         }
         DB::beginTransaction();
         try {
+            if(Auth::user()->tipo == TipoUsuario::ADMINISTRADOR){
+                $glosaTrnBill = GlosaTransaccion::CREDITO_DEPOSITO_A_BILLETERA_FROM_ADMIN;
+            }else{
+                $glosaTrnBill = GlosaTransaccion::CREDITO_DEPOSITO_A_BILLETERA;
+            }
             $fechaHora = Carbon::now('America/La_Paz')->toDateTimeString();
             $billeteraId = $request->billetera_id;
             $monto = $request->monto;
             $tipoTransaccion = TipoTransaccion::CREDITO;
-            $glosa = GlosaTransaccion::CREDITO_DEPOSITO_A_BILLETERA;
+            $glosa = $glosaTrnBill;
             $ordenId = 0; //En este caso es cero
             $billeteraTransaccion = $this->billeteraTransaccionService->reistroTransaccionBilletera($billeteraId, $monto, $tipoTransaccion, $glosa, $ordenId);
             //TransaccionAdmin
@@ -115,7 +143,8 @@ class BilleteraTransaccionController extends Controller
                 'tipo' => TipoTransaccion::CREDITO,
                 'transaccion' => Transaccion::INGRESO_POR_DEPOSITO_ABOGADO,
                 'glosa' => GlosaTransaccion::CREDITO_POR_DEPOSITO_ABOGADO,
-                'usuario_id' => Auth::user()->id
+                'usuario_id' => Auth::user()->id,
+                'billetera_id' => $request->billetera_id
             ];
             $transaccionesAdmin = $this->transaccionesAdminService->registrarTransaccionAdmin($dataTrnAdmin);
 

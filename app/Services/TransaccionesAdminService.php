@@ -25,6 +25,7 @@ class TransaccionesAdminService
             'transaccion' => $data['transaccion'],
             'glosa' => $data['glosa'],
             'usuario_id' => $data['usuario_id'],
+            'billetera_id' => $data['billetera_id'],
             'estado' => Estado::ACTIVO,
             'es_eliminado' => 0,
 

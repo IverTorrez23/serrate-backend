@@ -127,7 +127,8 @@ class TransaccionesContadorController extends Controller
                 'tipo' => TipoTransaccion::CREDITO,
                 'transaccion' => Transaccion::INGRESO_POR_DEVOLUCION_CONTADOR,
                 'glosa' => GlosaTransaccion::CREDITO_POR_DEVOLUCION_CONTADOR,
-                'usuario_id' => Auth::user()->id
+                'usuario_id' => Auth::user()->id,
+                'billetera_id' => 0
             ];
             $transaccionesAdmin = $this->transaccionesAdminService->registrarTransaccionAdmin($dataTrnAdmin);
 
