@@ -132,7 +132,8 @@ class ProcuradorPagoController extends Controller
                     'tipo' => TipoTransaccion::DEBITO,
                     'transaccion' => Transaccion::EGRESO_POR_PAGO_PROCURADURIA,
                     'glosa' => GlosaTransaccion::DEBITO_POR_PAGO_PROCURADURIA . '[' . implode(',', $ordenesCanceladas) . ']',
-                    'usuario_id' => Auth::user()->id
+                    'usuario_id' => Auth::user()->id,
+                    'billetera_id' => 0
                 ];
                 $trnAdmin = $this->transaccionesAdminService->registrarTransaccionAdmin($dataTrnAdmin);
             } else {
@@ -144,7 +145,8 @@ class ProcuradorPagoController extends Controller
                         'tipo' => TipoTransaccion::CREDITO,
                         'transaccion' => Transaccion::INGRESO_POR_PAGO_PROCURADURIA,
                         'glosa' => GlosaTransaccion::CREDITO_POR_PAGO_PROCURADURIA . '[' . implode(',', $ordenesCanceladas) . ']',
-                        'usuario_id' => Auth::user()->id
+                        'usuario_id' => Auth::user()->id,
+                        'billetera_id' => 0
                     ];
                     $trnAdmin = $this->transaccionesAdminService->registrarTransaccionAdmin($dataTrnAdmin);
                 }
@@ -285,7 +287,8 @@ class ProcuradorPagoController extends Controller
                 'tipo' => TipoTransaccion::CREDITO,
                 'transaccion' => Transaccion::INGRESO_POR_PAGO_PROCURADURIA,
                 'glosa' => GlosaTransaccion::CREDITO_POR_PAGO_PROCURADURIA . '[' . implode(',', $ordenesCanceladas) . ']',
-                'usuario_id' => Auth::user()->id
+                'usuario_id' => Auth::user()->id,
+                'billetera_id' => 0
             ];
             $trnAdmin = $this->transaccionesAdminService->registrarTransaccionAdmin($dataTrnAdmin);
 

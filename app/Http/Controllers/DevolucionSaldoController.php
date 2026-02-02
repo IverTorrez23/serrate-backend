@@ -137,6 +137,7 @@ class DevolucionSaldoController extends Controller
                 'transaccion' => Transaccion::EGRESO_POR_DEVOLUCION_ABOGADO,
                 'glosa' => GlosaTransaccion::DEBITO_POR_DEVOLUCION_SALDO,
                 'usuario_id' => Auth::user()->id,
+                'billetera_id' => $request->billetera_id
             ];
             $trnAdmin = $this->transaccionesAdminService->registrarTransaccionAdmin($dataTrnAdmin);
             //Transaccion en billetera

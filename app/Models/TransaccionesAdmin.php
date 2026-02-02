@@ -16,6 +16,7 @@ class TransaccionesAdmin extends Model
         'transaccion',
         'glosa',
         'usuario_id',
+        'billetera_id',
         'estado',
         'es_eliminado'
     ];

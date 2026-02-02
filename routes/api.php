@@ -414,6 +414,7 @@ Route::prefix('v1')->group(function () {
         Route::get('billetera-transaccion/listado-billetera/{fechaIni}/{fechaFin}/{billeteraId}', [BilleteraTransaccionController::class, 'listadoPorBilletera']);
         Route::post('billetera-transaccion', [BilleteraTransaccionController::class, 'store']);
         Route::patch('billetera-transaccion/eliminar/{billeteraTransaccion}', [BilleteraTransaccionController::class, 'destroy']);
+        Route::get('billetera-transaccion/listado-dep-admin', [BilleteraTransaccionController::class, 'DepBilleteraDesdeAdmin']);
         //Transacciones Causas
         Route::post('transacciones-causas', [TransaccionesCausaController::class, 'store']);
         Route::post('transacciones-causas/devolucion', [TransaccionesCausaController::class, 'devolucionABGeneral']);
