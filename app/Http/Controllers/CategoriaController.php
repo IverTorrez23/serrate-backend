@@ -58,42 +58,61 @@ class CategoriaController extends Controller
      */
     public function store(StoreCategoriaRequest $request)
     {
-        $estado=Estado::ACTIVO;
-        $categoria=Categoria::create([
-            'nombre'=>$request->nombre,
-            'abreviatura'=>$request->abreviatura,
-            'estado'=>$estado,
-            'es_eliminado'=>0
-         ]);
-         $data=[
-            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
-            'data'=>$categoria
-         ];
-         return response()
-               ->json($data);
+        $estado = Estado::ACTIVO;
+        $categoria = Categoria::create([
+            'nombre' => $request->nombre,
+            'abreviatura' => $request->abreviatura,
+            'estado' => $estado,
+            'es_eliminado' => 0
+        ]);
+        $data = [
+            'message' => MessageHttp::CREADO_CORRECTAMENTE,
+            'data' => $categoria
+        ];
+        return response()
+            ->json($data);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Categoria $categoria = null)
+    public function show(Categoria $categoria)
     {
-        if ($categoria) {
-
+        try {
             $data = [
                 'message' => 'Categoria obtenida correctamente',
                 'data' => $categoria
             ];
-        } else {
+            return response()->json($data);
+        } catch (\Throwable $e) {
 
-            $categorias = $this->categoriaService->listarActivos();
-            $data = [
-                'message' => 'Categorias obtenidas correctamente',
-                'data' => $categorias
-            ];
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Error al obtener categoria.',
+                'error'   => config('app.debug') ? $e->getMessage() : null,
+                'line'    => config('app.debug') ? $e->getLine() : null,
+                'file'    => config('app.debug') ? $e->getFile() : null,
+            ], 500);
         }
+    }
+    public function listarActivos()
+    {
+        try {
+            $categorias = $this->categoriaService->listarActivos();
+            return response()->json([
+                'message' => 'Categorias obtenidas correctamente',
+                'data'    => $categorias
+            ], 200);
+        } catch (\Throwable $e) {
 
-        return response()->json($data);
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Error al obtener categoria.',
+                'error'   => config('app.debug') ? $e->getMessage() : null,
+                'line'    => config('app.debug') ? $e->getLine() : null,
+                'file'    => config('app.debug') ? $e->getFile() : null,
+            ], 500);
+        }
     }
 
     /**
@@ -113,10 +132,11 @@ class CategoriaController extends Controller
             'nombre',
             'abreviatura',
             'estado',
-            'es_eliminado']));
-        $data=[
-        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
-        'data'=>$categoria
+            'es_eliminado'
+        ]));
+        $data = [
+            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+            'data' => $categoria
         ];
         return response()->json($data);
     }
@@ -126,11 +146,11 @@ class CategoriaController extends Controller
      */
     public function destroy(Categoria $categoria)
     {
-        $categoria->es_eliminado   =1;
-         $categoria->save();
-         $data=[
-            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
-            'data'=>$categoria
+        $categoria->es_eliminado   = 1;
+        $categoria->save();
+        $data = [
+            'message' => MessageHttp::ELIMINADO_CORRECTAMENTE,
+            'data' => $categoria
         ];
         return response()->json($data);
     }

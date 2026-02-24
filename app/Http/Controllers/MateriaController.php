@@ -77,24 +77,45 @@ class MateriaController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Materia $materia = null)
+    public function show(Materia $materia)
     {
-        if ($materia) {
+        try {
             $data = [
                 'message' => 'Materia obtenida correctamente',
                 'data' => $materia
             ];
-        } else {
+            return response()->json($data);
+        } catch (\Throwable $e) {
 
-            $materias = $this->materiaService->listarActivos();
-            $data = [
-                'message' => 'Materias obtenidas correctamente',
-                'data' => $materias
-            ];
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Error al obtener materias.',
+                'error'   => config('app.debug') ? $e->getMessage() : null,
+                'line'    => config('app.debug') ? $e->getLine() : null,
+                'file'    => config('app.debug') ? $e->getFile() : null,
+            ], 500);
         }
-
-        return response()->json($data);
     }
+    public function listarActivos()
+    {
+        try {
+            $materias = $this->materiaService->listarActivos();
+            return response()->json([
+                'message' => 'Materias obtenidas correctamente',
+                'data'    => $materias
+            ], 200);
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Error al obtener materias.',
+                'error'   => config('app.debug') ? $e->getMessage() : null,
+                'line'    => config('app.debug') ? $e->getLine() : null,
+                'file'    => config('app.debug') ? $e->getFile() : null,
+            ], 500);
+        }
+    }
+
 
     /**
      * Show the form for editing the specified resource.

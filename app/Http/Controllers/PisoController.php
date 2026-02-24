@@ -57,39 +57,60 @@ class PisoController extends Controller
      */
     public function store(StorePisoRequest $request)
     {
-        $estado=Estado::ACTIVO;
-        $piso=Piso::create([
-            'nombre'=>$request->nombre,
-            'estado'=>$estado,
-            'es_eliminado'=>0
-         ]);
-         $data=[
-            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
-            'data'=>$piso
-         ];
-         return response()
-               ->json($data);
+        $estado = Estado::ACTIVO;
+        $piso = Piso::create([
+            'nombre' => $request->nombre,
+            'estado' => $estado,
+            'es_eliminado' => 0
+        ]);
+        $data = [
+            'message' => MessageHttp::CREADO_CORRECTAMENTE,
+            'data' => $piso
+        ];
+        return response()
+            ->json($data);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Piso $piso = null)
+    public function show(Piso $piso)
     {
-        if ($piso) {
+        try {
             $data = [
                 'message' => 'Piso obtenido correctamente',
                 'data' => $piso
             ];
-        } else {
-            $pisos = $this->pisoService->listarActivos();
-            $data = [
-                'message' => 'Pisos obtenidos correctamente',
-                'data' => $pisos
-            ];
-        }
+            return response()->json($data);
+        } catch (\Throwable $e) {
 
-        return response()->json($data);
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Error al obtener Piso.',
+                'error'   => config('app.debug') ? $e->getMessage() : null,
+                'line'    => config('app.debug') ? $e->getLine() : null,
+                'file'    => config('app.debug') ? $e->getFile() : null,
+            ], 500);
+        }
+    }
+    public function listarActivos()
+    {
+        try {
+            $pisos = $this->pisoService->listarActivos();
+            return response()->json([
+                'message' => 'Pisos obtenidos correctamente',
+                'data'    => $pisos
+            ], 200);
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Error al obtener Pisos.',
+                'error'   => config('app.debug') ? $e->getMessage() : null,
+                'line'    => config('app.debug') ? $e->getLine() : null,
+                'file'    => config('app.debug') ? $e->getFile() : null,
+            ], 500);
+        }
     }
 
     /**
@@ -108,10 +129,11 @@ class PisoController extends Controller
         $piso->update($request->only([
             'nombre',
             'estado',
-            'es_eliminado']));
-        $data=[
-        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
-        'data'=>$piso
+            'es_eliminado'
+        ]));
+        $data = [
+            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+            'data' => $piso
         ];
         return response()->json($data);
     }
@@ -121,11 +143,11 @@ class PisoController extends Controller
      */
     public function destroy(Piso $piso)
     {
-        $piso->es_eliminado   =1;
-         $piso->save();
-         $data=[
-            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
-            'data'=>$piso
+        $piso->es_eliminado   = 1;
+        $piso->save();
+        $data = [
+            'message' => MessageHttp::ELIMINADO_CORRECTAMENTE,
+            'data' => $piso
         ];
         return response()->json($data);
     }
