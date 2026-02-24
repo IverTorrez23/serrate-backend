@@ -65,23 +65,43 @@ class AvancePlantillaController extends Controller
     }
 
 
-    public function show(AvancePlantilla $avancePlantilla = null)
+    public function show(AvancePlantilla $avancePlantilla)
     {
-        if ($avancePlantilla) {
+        try {
             $data = [
-                'message' => 'Materia obtenida correctamente',
+                'message' => 'Plantilla obtenidas correctamente',
                 'data' => $avancePlantilla
             ];
-        } else {
+            return response()->json($data);
+        } catch (\Throwable $e) {
 
-            $avancesPlantillas = $this->avancePlantillaService->listarActivos();
-            $data = [
-                'message' => 'Plantillas obtenidas correctamente',
-                'data' => $avancesPlantillas
-            ];
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Error al obtener Plantilla.',
+                'error'   => config('app.debug') ? $e->getMessage() : null,
+                'line'    => config('app.debug') ? $e->getLine() : null,
+                'file'    => config('app.debug') ? $e->getFile() : null,
+            ], 500);
         }
+    }
+    public function listarActivos()
+    {
+        try {
+            $avancesPlantillas = $this->avancePlantillaService->listarActivos();
+            return response()->json([
+                'message' => 'Plantillas obtenidas correctamente',
+                'data'    => $avancesPlantillas
+            ], 200);
+        } catch (\Throwable $e) {
 
-        return response()->json($data);
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Error al obtener plantillas.',
+                'error'   => config('app.debug') ? $e->getMessage() : null,
+                'line'    => config('app.debug') ? $e->getLine() : null,
+                'file'    => config('app.debug') ? $e->getFile() : null,
+            ], 500);
+        }
     }
 
     public function listarPlantillaPorId($idPlantilla)

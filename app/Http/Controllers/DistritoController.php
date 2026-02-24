@@ -57,40 +57,61 @@ class DistritoController extends Controller
      */
     public function store(StoreDistritoRequest $request)
     {
-        $estado=Estado::ACTIVO;
-        $distrito=Distrito::create([
-            'nombre'=>$request->nombre,
-            'abreviatura'=>$request->abreviatura,
-            'estado'=>$estado,
-            'es_eliminado'=>0
-         ]);
-         $data=[
-            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
-            'data'=>$distrito
-         ];
-         return response()
-               ->json($data);
+        $estado = Estado::ACTIVO;
+        $distrito = Distrito::create([
+            'nombre' => $request->nombre,
+            'abreviatura' => $request->abreviatura,
+            'estado' => $estado,
+            'es_eliminado' => 0
+        ]);
+        $data = [
+            'message' => MessageHttp::CREADO_CORRECTAMENTE,
+            'data' => $distrito
+        ];
+        return response()
+            ->json($data);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Distrito $distrito = null)
+    public function show(Distrito $distrito)
     {
-        if ($distrito) {
+        try {
             $data = [
                 'message' => 'Distrito obtenido correctamente',
                 'data' => $distrito
             ];
-        } else {
-            $distritos = $this->distritoService->listarActivos();
-            $data = [
-                'message' => 'Distritos obtenidos correctamente',
-                'data' => $distritos
-            ];
-        }
+            return response()->json($data);
+        } catch (\Throwable $e) {
 
-        return response()->json($data);
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Error al obtener Distrito.',
+                'error'   => config('app.debug') ? $e->getMessage() : null,
+                'line'    => config('app.debug') ? $e->getLine() : null,
+                'file'    => config('app.debug') ? $e->getFile() : null,
+            ], 500);
+        }
+    }
+    public function listarActivos()
+    {
+        try {
+            $distritos = $this->distritoService->listarActivos();
+            return response()->json([
+                'message' => 'Distritos obtenidos correctamente',
+                'data'    => $distritos
+            ], 200);
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Error al obtener Distritos.',
+                'error'   => config('app.debug') ? $e->getMessage() : null,
+                'line'    => config('app.debug') ? $e->getLine() : null,
+                'file'    => config('app.debug') ? $e->getFile() : null,
+            ], 500);
+        }
     }
 
     /**
@@ -110,10 +131,11 @@ class DistritoController extends Controller
             'nombre',
             'abreviatura',
             'estado',
-            'es_eliminado']));
-        $data=[
-        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
-        'data'=>$distrito
+            'es_eliminado'
+        ]));
+        $data = [
+            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+            'data' => $distrito
         ];
         return response()->json($data);
     }
@@ -123,11 +145,11 @@ class DistritoController extends Controller
      */
     public function destroy(Distrito $distrito)
     {
-        $distrito->es_eliminado   =1;
-         $distrito->save();
-         $data=[
-            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
-            'data'=>$distrito
+        $distrito->es_eliminado   = 1;
+        $distrito->save();
+        $data = [
+            'message' => MessageHttp::ELIMINADO_CORRECTAMENTE,
+            'data' => $distrito
         ];
         return response()->json($data);
     }

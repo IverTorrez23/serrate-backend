@@ -152,7 +152,7 @@ class OrdenController extends Controller
     }
 
 
-    public function listarPorCausa(Request $request, $idCausa = null)
+    public function listarPorCausa(Request $request, $idCausa)
     {
         $tipoUsuario = Auth::user()->tipo;
         if ($tipoUsuario === TipoUsuario::ABOGADO_INDEPENDIENTE || $tipoUsuario === TipoUsuario::ABOGADO_LIDER || $tipoUsuario === TipoUsuario::ABOGADO_DEPENDIENTE) {
@@ -270,7 +270,7 @@ class OrdenController extends Controller
         }
     }
 
-    public function show(Orden $orden = null)
+    public function show(Orden $orden)
     {
         $tipoUsuario = Auth::user()->tipo;
         if ($tipoUsuario === TipoUsuario::ABOGADO_INDEPENDIENTE || $tipoUsuario === TipoUsuario::ABOGADO_LIDER || $tipoUsuario === TipoUsuario::ABOGADO_DEPENDIENTE) {

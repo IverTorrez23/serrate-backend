@@ -109,7 +109,8 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
         //Materia
         Route::get('materias', [MateriaController::class, 'index']);
-        Route::get('materias/listar/{materia?}', [MateriaController::class, 'show']);
+        Route::get('materias/listar/{materia}', [MateriaController::class, 'show']);
+        Route::get('materias/listar-activos', [MateriaController::class, 'listarActivos']);
         Route::post('materias', [MateriaController::class, 'store']);
         Route::patch('materias/{materia}', [MateriaController::class, 'update']);
         Route::patch('materias/eliminar/{materia}', [MateriaController::class, 'destroy']);
@@ -124,25 +125,29 @@ Route::prefix('v1')->group(function () {
         //Categoria
         Route::get('categorias', [CategoriaController::class, 'index']);
         Route::post('categorias', [CategoriaController::class, 'store']);
-        Route::get('categorias/listar/{categoria?}', [CategoriaController::class, 'show']);
+        Route::get('categorias/listar/{categoria}', [CategoriaController::class, 'show']);
+        Route::get('categorias/listar-activos', [CategoriaController::class, 'listarActivos']);
         Route::patch('categorias/{categoria}', [CategoriaController::class, 'update']);
         Route::patch('categorias/eliminar/{categoria}', [CategoriaController::class, 'destroy']);
         //Piso
         Route::get('pisos', [PisoController::class, 'index']);
         Route::post('pisos', [PisoController::class, 'store']);
-        Route::get('pisos/listar/{piso?}', [PisoController::class, 'show']);
+        Route::get('pisos/listar/{piso}', [PisoController::class, 'show']);
+        Route::get('pisos/listar-activos', [PisoController::class, 'listarActivos']);
         Route::patch('pisos/{piso}', [PisoController::class, 'update']);
         Route::patch('pisos/eliminar/{piso}', [PisoController::class, 'destroy']);
         //Distrito
         Route::get('distritos', [DistritoController::class, 'index']);
         Route::post('distritos', [DistritoController::class, 'store']);
-        Route::get('distritos/listar/{distrito?}', [DistritoController::class, 'show']);
+        Route::get('distritos/listar/{distrito}', [DistritoController::class, 'show']);
+        Route::get('distritos/listar-activos', [DistritoController::class, 'listarActivos']);
         Route::patch('distritos/{distrito}', [DistritoController::class, 'update']);
         Route::patch('distritos/eliminar/{distrito}', [DistritoController::class, 'destroy']);
         //Juzgado
         Route::get('juzgados', [JuzgadoController::class, 'index']);
         Route::post('juzgados', [JuzgadoController::class, 'store']);
-        Route::get('juzgados/listar/{juzgado?}', [JuzgadoController::class, 'show']);
+        Route::get('juzgados/listar/{juzgado}', [JuzgadoController::class, 'show']);
+        Route::get('juzgados/listar-activos', [JuzgadoController::class, 'listarActivos']);
         Route::post('juzgados/{juzgado}', [JuzgadoController::class, 'update']); //Actualiza
         Route::patch('juzgados/eliminar/{juzgado}', [JuzgadoController::class, 'destroy']);
         //Clase Tribunal
@@ -238,7 +243,8 @@ Route::prefix('v1')->group(function () {
         //Avance plantilla
         Route::get('avance-plantillas', [AvancePlantillaController::class, 'index']);
         Route::post('avance-plantillas', [AvancePlantillaController::class, 'store']);
-        Route::get('avance-plantillas/listar/{avancePlantilla?}', [AvancePlantillaController::class, 'show']);
+        Route::get('avance-plantillas/listar/{avancePlantilla}', [AvancePlantillaController::class, 'show']);
+        Route::get('avance-plantillas/listar-activos', [AvancePlantillaController::class, 'listarActivos']);
         Route::get('avance-plantillas/listarPorId/{idPlantilla}', [AvancePlantillaController::class, 'listarPlantillaPorId']);
         Route::patch('avance-plantillas/{avancePlantilla}', [AvancePlantillaController::class, 'update']);
         Route::patch('avance-plantillas/eliminar/{avancePlantilla}', [AvancePlantillaController::class, 'destroy']);
@@ -246,7 +252,7 @@ Route::prefix('v1')->group(function () {
         Route::get('postas', [PostaController::class, 'index']);
         Route::post('postas', [PostaController::class, 'store']);
         Route::get('postas/listar/{posta?}', [PostaController::class, 'show']);
-        Route::get('postas/listarPorId/{idPlantilla?}', [PostaController::class, 'listarPorIdPlantilla']);
+        Route::get('postas/listarPorId/{idPlantilla}', [PostaController::class, 'listarPorIdPlantilla']);
         Route::patch('postas/{posta}', [PostaController::class, 'update']);
         Route::patch('postas/eliminar/{posta}', [PostaController::class, 'destroy']);
         //Agenda apunte
@@ -284,10 +290,10 @@ Route::prefix('v1')->group(function () {
         Route::patch('matriz-cotizacion/{matrizCotizacion}', [MatrizCotizacionController::class, 'update']);
         //Orden
         Route::get('orden', [OrdenController::class, 'index']);
-        Route::get('orden/listar-por-causa/{id?}', [OrdenController::class, 'listarPorCausa']);
+        Route::get('orden/listar-por-causa/{id}', [OrdenController::class, 'listarPorCausa']);
         Route::get('orden/listar-por-causa/{idCausa}/procurador/{procuradorId}', [OrdenController::class, 'listarPorCausaDeProcurador']);
         Route::post('orden', [OrdenController::class, 'store']);
-        Route::get('orden/listado/{orden?}', [OrdenController::class, 'show']);
+        Route::get('orden/listado/{orden}', [OrdenController::class, 'show']);
         Route::patch('orden/{orden}', [OrdenController::class, 'update']);
         Route::patch('orden/eliminar/{orden}', [OrdenController::class, 'destroy']);
         Route::patch('orden/aceptar/{orden}', [OrdenController::class, 'aceptarOrden']);

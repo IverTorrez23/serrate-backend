@@ -67,47 +67,68 @@ class JuzgadoController extends Controller
             $path = null;
         }
 
-         $data = [
-            'nombre_numerico'=>$request->nombre_numerico,
-            'jerarquia'=>$request->jerarquia,
-            'materia_juzgado'=>$request->materia_juzgado,
-            'coordenadas'=>$request->coordenadas,
-            'foto_url'=> $path,
-            'contacto1'=>$request->contacto1,
-            'contacto2'=>$request->contacto2,
-            'contacto3'=>$request->contacto3,
-            'contacto4'=>$request->contacto4,
-            'distrito_id'=>$request->distrito_id,
-            'piso_id'=>$request->piso_id
+        $data = [
+            'nombre_numerico' => $request->nombre_numerico,
+            'jerarquia' => $request->jerarquia,
+            'materia_juzgado' => $request->materia_juzgado,
+            'coordenadas' => $request->coordenadas,
+            'foto_url' => $path,
+            'contacto1' => $request->contacto1,
+            'contacto2' => $request->contacto2,
+            'contacto3' => $request->contacto3,
+            'contacto4' => $request->contacto4,
+            'distrito_id' => $request->distrito_id,
+            'piso_id' => $request->piso_id
         ];
         $juzgado = $this->juzgadoService->store($data);
-         $data=[
-            'message'=> MessageHttp::CREADO_CORRECTAMENTE,
-            'data'=>$juzgado
-         ];
-         return response()
-               ->json($data);
+        $data = [
+            'message' => MessageHttp::CREADO_CORRECTAMENTE,
+            'data' => $juzgado
+        ];
+        return response()
+            ->json($data);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Juzgado $juzgado = null)
+    public function show(Juzgado $juzgado)
     {
-        if ($juzgado) {
+        try {
             $data = [
                 'message' => 'Juzgado obtenido correctamente',
                 'data' => $juzgado
             ];
-        } else {
-            $juzgados = $this->juzgadoService->listarActivos();
-            $data = [
-                'message' => 'Juzgados obtenidos correctamente',
-                'data' => $juzgados
-            ];
-        }
+            return response()->json($data);
+        } catch (\Throwable $e) {
 
-        return response()->json($data);
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Error al obtener Juzgado.',
+                'error'   => config('app.debug') ? $e->getMessage() : null,
+                'line'    => config('app.debug') ? $e->getLine() : null,
+                'file'    => config('app.debug') ? $e->getFile() : null,
+            ], 500);
+        }
+    }
+    public function listarActivos()
+    {
+        try {
+            $juzgados = $this->juzgadoService->listarActivos();
+            return response()->json([
+                'message' => 'Juzgados obtenidos correctamente',
+                'data'    => $juzgados
+            ], 200);
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Error al obtener juzgados.',
+                'error'   => config('app.debug') ? $e->getMessage() : null,
+                'line'    => config('app.debug') ? $e->getLine() : null,
+                'file'    => config('app.debug') ? $e->getFile() : null,
+            ], 500);
+        }
     }
 
     /**
@@ -134,19 +155,19 @@ class JuzgadoController extends Controller
             'contacto4',
             'distrito_id',
             'piso_id',
-            ]);
+        ]);
 
-            if ($request->hasFile('foto_url')) {
-                $file = $request->file('foto_url');
-                $path = $file->store('uploads/img', 'public');
-                $data['foto_url'] = $path;
-            } else {
-                $path = null;
-            }
-            $juzgado=$this->juzgadoService->update($data,$juzgado->id);
-        $data=[
-        'message'=> MessageHttp::ACTUALIZADO_CORRECTAMENTE,
-        'data'=>$juzgado
+        if ($request->hasFile('foto_url')) {
+            $file = $request->file('foto_url');
+            $path = $file->store('uploads/img', 'public');
+            $data['foto_url'] = $path;
+        } else {
+            $path = null;
+        }
+        $juzgado = $this->juzgadoService->update($data, $juzgado->id);
+        $data = [
+            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+            'data' => $juzgado
         ];
         return response()->json($data);
     }
@@ -156,11 +177,11 @@ class JuzgadoController extends Controller
      */
     public function destroy(Juzgado $juzgado)
     {
-        $juzgado->es_eliminado   =1;
-         $juzgado->save();
-         $data=[
-            'message'=> MessageHttp::ELIMINADO_CORRECTAMENTE,
-            'data'=>$juzgado
+        $juzgado->es_eliminado   = 1;
+        $juzgado->save();
+        $data = [
+            'message' => MessageHttp::ELIMINADO_CORRECTAMENTE,
+            'data' => $juzgado
         ];
         return response()->json($data);
     }

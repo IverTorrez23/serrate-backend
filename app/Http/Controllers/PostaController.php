@@ -54,7 +54,7 @@ class PostaController extends Controller
         return response()->json($data);
     }
 
-    public function listarPorIdPlantilla(Request $request, $idPlantilla = null)
+    public function listarPorIdPlantilla(Request $request, $idPlantilla)
     {
         $postas = $this->postaService->listarPorIdPlantilla($request, $idPlantilla);
         return new PostaCollection($postas);
