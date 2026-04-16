@@ -40,6 +40,9 @@ class UsuarioResource extends JsonResource
                 'created_at' => $this->persona->created_at,
                 'updated_at' => $this->persona->updated_at,
             ] : null,
+            'abogados_dependientes' => UsuarioResource::collection(
+                $this->whenLoaded('abogadosDependientes')
+            ),
         ];
         // return parent::toArray($request);
     }

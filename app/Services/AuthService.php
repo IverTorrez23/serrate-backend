@@ -113,7 +113,9 @@ class AuthService
     public function login(array $credentials): JsonResponse
     {
         try {
-            $user = User::where('email', $credentials['email'])->first();
+            $user = User::where('email', $credentials['email'])
+                ->where('estado', 'ACTIVO')
+                ->first();
 
             if (!$user) {
                 Log::warning('Usuario no encontrado', ['email' => $credentials['email']]);

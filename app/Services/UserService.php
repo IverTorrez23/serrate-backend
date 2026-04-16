@@ -121,8 +121,8 @@ class UserService
 
     public function obtenerUsuariosDependientes($request, $abogadoId)
     {
-        $query = User::where('abogado_id', $abogadoId)
-            //->active()
+        $query = User::active()->where('abogado_id', $abogadoId)
+            //->
             ->with('persona')
             ->select('users.*');
 

@@ -78,6 +78,11 @@ Route::prefix('v1')->group(function () {
             Route::post('crear', [UserController::class, 'crearUsuario']);
             Route::patch('actualizar/{user}', [UserController::class, 'actualizarUsuario']);
             Route::delete('eliminar/{user}', [UserController::class, 'eliminarUsuario']);
+
+            Route::get('abogados-lider-list', [UserController::class, 'listaAbogadosLideres']);
+            Route::get('abogados-ind-list', [UserController::class, 'listarAbogadosIndependientesPaginado']);
+            Route::get('procuradores-list', [UserController::class, 'listarAbogadosProcuradoresPaginado']);
+            Route::get('system-users', [UserController::class, 'listarSystemUsersPaginado']);
         });
 
         // Perfil del usuario autenticado

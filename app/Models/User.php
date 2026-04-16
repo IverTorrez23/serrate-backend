@@ -4,6 +4,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Constants\Estado;
+use App\Constants\TipoUsuario;
 use App\Traits\CommonScopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -64,5 +66,16 @@ class User extends Authenticatable
     public function causas()
     {
         return $this->hasMany(Causa::class, 'usuario_id');
+    }
+    public function abogadosDependientes()
+    {
+        return $this->hasMany(User::class, 'abogado_id')
+            ->where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->where('tipo', TipoUsuario::ABOGADO_DEPENDIENTE);
+    }
+    public function abogadoLider()
+    {
+        return $this->belongsTo(User::class, 'abogado_id');
     }
 }

@@ -125,4 +125,103 @@ class UserController extends Controller
         ];
         return response()->json($data);
     }
+    public function listaAbogadosLideres(Request $request)
+    {
+        $query = User::with(['persona', 'abogadosDependientes.persona'])
+            ->where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->where('tipo', TipoUsuario::ABOGADO_LIDER);
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $abogadosLideres = $query->paginate($perPage);
+
+        return UsuarioResource::collection($abogadosLideres);
+    }
+    public function listarAbogadosIndependientesPaginado(Request $request)
+    {
+        $query = User::where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->where('tipo', TipoUsuario::ABOGADO_INDEPENDIENTE);
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $abogadosInd = $query->paginate($perPage);
+
+        return UsuarioResource::collection($abogadosInd);
+    }
+    public function listarAbogadosProcuradoresPaginado(Request $request)
+    {
+        $query = User::where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->where('tipo', TipoUsuario::PROCURADOR);
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $procuradores = $query->paginate($perPage);
+
+        return UsuarioResource::collection($procuradores);
+    }
+    public function listarSystemUsersPaginado(Request $request)
+    {
+        $tiposPermitidos = [
+            TipoUsuario::CONTADOR,
+            TipoUsuario::PROCURADOR_MAESTRO,
+            TipoUsuario::ADMINISTRADOR,
+            TipoUsuario::OBSERVADOR
+        ];
+        $query = User::where('estado', Estado::ACTIVO)
+            ->where('es_eliminado', 0)
+            ->whereIn('tipo', $tiposPermitidos);
+
+        // Manejo de búsqueda
+        if ($request->has('search')) {
+            $search = json_decode($request->input('search'), true);
+            $query->search($search);
+        }
+
+        // Manejo de ordenamiento
+        if ($request->has('sort')) {
+            $sort = json_decode($request->input('sort'), true);
+            $query->sort($sort);
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $procuradores = $query->paginate($perPage);
+
+        return UsuarioResource::collection($procuradores);
+    }
 }
