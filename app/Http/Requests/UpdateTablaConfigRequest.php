@@ -27,6 +27,7 @@ class UpdateTablaConfigRequest extends FormRequest
             'texto_index' => ['sometimes', 'string'],
             'imagen_index' => ['nullable', 'image'],
             'imagen_logo' => ['nullable', 'image'],
+            'imagen_index_mobil' => ['nullable', 'image'],
         ];
     }
 }

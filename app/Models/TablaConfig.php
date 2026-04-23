@@ -16,6 +16,7 @@ class TablaConfig extends Model
         'titulo_index',
         'texto_index',
         'imagen_index',
+        'imagen_index_mobil',
         'imagen_logo',
         'nombre',
         'archivo_url',

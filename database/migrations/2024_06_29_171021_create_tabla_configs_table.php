@@ -20,6 +20,7 @@ return new class extends Migration
             $table->text('titulo_index')->nullable()->comment('Titulo del texto del index');
             $table->text('texto_index')->nullable()->comment('texto informativo de la pagina index');
             $table->text('imagen_index')->nullable()->comment('imagen de index de la pagina');
+            $table->text('imagen_index_mobil')->nullable()->comment('imagen de index de la pagina para mobil');
             $table->text('imagen_logo')->nullable()->comment('imagen del logo del sistema');
             $table->string('nombre', 100)->comment('nombre del archivo');
             $table->text('archivo_url', 300)->comment('url del archivo');
