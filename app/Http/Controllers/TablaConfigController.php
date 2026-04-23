@@ -70,15 +70,48 @@ class TablaConfigController extends Controller
             'titulo_index',
             'texto_index'
         ]);
-        if ($request->hasFile('imagen_index')) {
+        /*if ($request->hasFile('imagen_index')) {
             $file = $request->file('imagen_index');
             $pathindex = $file->store('uploads/img/config', 'public');
             $data['imagen_index'] = $pathindex;
+        }*/
+        if ($request->hasFile('imagen_index')) {
+            $file = $request->file('imagen_index');
+
+            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+            $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/img/config';
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+            $file->move($destinationPath, $filename);
+            $data['imagen_index'] = 'uploads/img/config/' . $filename;
+        }
+
+        if ($request->hasFile('imagen_index_mobil')) {
+            $file = $request->file('imagen_index_mobil');
+            //$pathindexMobil = $file->store('uploads/img/config', 'public');
+            //$data['imagen_index_mobil'] = $pathindexMobil;
+            // Nombre único para evitar sobrescribir archivos
+            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+            $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/img/config';
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+            $file->move($destinationPath, $filename);
+            $data['imagen_index_mobil'] = 'uploads/img/config/' . $filename;
         }
         if ($request->hasFile('imagen_logo')) {
             $file = $request->file('imagen_logo');
-            $pathlogo = $file->store('uploads/img/config', 'public');
-            $data['imagen_logo'] = $pathlogo;
+            //$pathlogo = $file->store('uploads/img/config', 'public');
+            //$data['imagen_logo'] = $pathlogo;
+            // Nombre único para evitar sobrescribir archivos
+            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+            $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/img/config';
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+            $file->move($destinationPath, $filename);
+            $data['imagen_logo'] = 'uploads/img/config/' . $filename;
         }
         $tablaConfig = $this->tablaConfigService->update($data, 1);
         return response()->json([
@@ -99,8 +132,15 @@ class TablaConfigController extends Controller
     {
         if ($request->hasFile('archivo_url')) {
             $file = $request->file('archivo_url');
-            $pathArancel = $file->store('uploads/img/aranceles', 'public');
-            $data['archivo_url'] = $pathArancel;
+            //$pathArancel = $file->store('uploads/img/aranceles', 'public');
+            //$data['archivo_url'] = $pathArancel;
+            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+            $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/img/aranceles';
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+            $file->move($destinationPath, $filename);
+            $data['archivo_url'] = 'uploads/img/aranceles/' . $filename;
         }
         $data['nombre'] = $request->nombre;
         $tablaConfig = $this->tablaConfigService->update($data, 1);
@@ -121,18 +161,39 @@ class TablaConfigController extends Controller
     {
         if ($request->hasFile('url_acuerdo_lider')) {
             $file = $request->file('url_acuerdo_lider');
-            $pathArancel = $file->store('uploads/img/acuerdos', 'public');
-            $data['url_acuerdo_lider'] = $pathArancel;
+            //$pathArancel = $file->store('uploads/img/acuerdos', 'public');
+            //$data['url_acuerdo_lider'] = $pathArancel;
+            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+            $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/img/acuerdos';
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+            $file->move($destinationPath, $filename);
+            $data['url_acuerdo_lider'] = 'uploads/img/acuerdos/' . $filename;
         }
         if ($request->hasFile('url_acuerdo_indep')) {
             $file = $request->file('url_acuerdo_indep');
-            $pathArancel = $file->store('uploads/img/acuerdos', 'public');
-            $data['url_acuerdo_indep'] = $pathArancel;
+            //$pathArancel = $file->store('uploads/img/acuerdos', 'public');
+            //$data['url_acuerdo_indep'] = $pathArancel;
+            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+            $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/img/acuerdos';
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+            $file->move($destinationPath, $filename);
+            $data['url_acuerdo_indep'] = 'uploads/img/acuerdos/' . $filename;
         }
         if ($request->hasFile('url_acuerdo_proc')) {
             $file = $request->file('url_acuerdo_proc');
-            $pathArancel = $file->store('uploads/img/acuerdos', 'public');
-            $data['url_acuerdo_proc'] = $pathArancel;
+            //$pathArancel = $file->store('uploads/img/acuerdos', 'public');
+            //$data['url_acuerdo_proc'] = $pathArancel;
+            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+            $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/img/acuerdos';
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+            $file->move($destinationPath, $filename);
+            $data['url_acuerdo_proc'] = 'uploads/img/acuerdos/' . $filename;
         }
         $tablaConfig = $this->tablaConfigService->update($data, 1);
         return response()->json([

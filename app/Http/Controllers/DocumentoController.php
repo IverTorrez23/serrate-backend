@@ -108,10 +108,24 @@ class DocumentoController extends Controller
         if ($request->hasFile('archivo_url')) {
             $file = $request->file('archivo_url');
             if ($request->tipo === TipoDocumento::NORMAS) {
-                $path = $file->store('uploads/pdf/NORMAS', 'public');
+                //$path = $file->store('uploads/pdf/NORMAS', 'public');
+                $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+                $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/pdf/NORMAS';
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+                $file->move($destinationPath, $filename);
+                $path = 'uploads/pdf/NORMAS/' . $filename;
             } else {
                 if ($request->tipo === TipoDocumento::TRAMITES) {
-                    $path = $file->store('uploads/pdf/TRAMITES', 'public');
+                    //$path = $file->store('uploads/pdf/TRAMITES', 'public');
+                    $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+                    $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/pdf/TRAMITES';
+                    if (!file_exists($destinationPath)) {
+                        mkdir($destinationPath, 0755, true);
+                    }
+                    $file->move($destinationPath, $filename);
+                    $path = 'uploads/pdf/TRAMITES/' . $filename;
                 }
             }
         } else {
@@ -161,10 +175,24 @@ class DocumentoController extends Controller
         if ($request->hasFile('archivo_url')) {
             $file = $request->file('archivo_url');
             if ($request->tipo === TipoDocumento::NORMAS) {
-                $path = $file->store('uploads/pdf/NORMAS', 'public');
+                //$path = $file->store('uploads/pdf/NORMAS', 'public');
+                $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+                $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/pdf/NORMAS';
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+                $file->move($destinationPath, $filename);
+                $path = 'uploads/pdf/NORMAS/' . $filename;
             } else {
                 if ($request->tipo === TipoDocumento::TRAMITES) {
-                    $path = $file->store('uploads/pdf/TRAMITES', 'public');
+                    //$path = $file->store('uploads/pdf/TRAMITES', 'public');
+                    $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+                    $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/pdf/TRAMITES';
+                    if (!file_exists($destinationPath)) {
+                        mkdir($destinationPath, 0755, true);
+                    }
+                    $file->move($destinationPath, $filename);
+                    $path = 'uploads/pdf/TRAMITES/' . $filename;
                 }
             }
 
