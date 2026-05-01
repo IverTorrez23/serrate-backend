@@ -49,10 +49,20 @@ use App\Http\Controllers\TransaccionesAdminController;
 use App\Http\Controllers\TransaccionesCausaController;
 use App\Http\Controllers\TransaccionesContadorController;
 use App\Http\Controllers\VerificationController;
+use Illuminate\Support\Facades\Artisan;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+//limpiar cache mediante ruta
+Route::get('/clear-config-cache-seguro', function () {
+    Artisan::call('config:clear');
+    Artisan::call('cache:clear');
+
+    return response()->json([
+        'message' => 'Cache limpiada correctamente'
+    ]);
+});
 
 Route::prefix('v1')->group(function () {
 

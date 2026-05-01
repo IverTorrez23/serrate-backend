@@ -79,7 +79,8 @@ class TablaConfigController extends Controller
             $file = $request->file('imagen_index');
 
             $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-            $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/img/config';
+            $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/img/config'; //Para cargas en Prod
+            //$destinationPath = 'uploads/img/config'; //Para cargas en local
             if (!file_exists($destinationPath)) {
                 mkdir($destinationPath, 0755, true);
             }
@@ -93,7 +94,8 @@ class TablaConfigController extends Controller
             //$data['imagen_index_mobil'] = $pathindexMobil;
             // Nombre único para evitar sobrescribir archivos
             $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-            $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/img/config';
+            $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/img/config'; //Para cargas en prod
+            //$destinationPath = 'uploads/img/config'; //Para cargas en local
             if (!file_exists($destinationPath)) {
                 mkdir($destinationPath, 0755, true);
             }
@@ -106,7 +108,8 @@ class TablaConfigController extends Controller
             //$data['imagen_logo'] = $pathlogo;
             // Nombre único para evitar sobrescribir archivos
             $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-            $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/img/config';
+            $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/img/config'; //Para cargas en Prod
+            //$destinationPath = 'uploads/img/config'; //Para cargas en local
             if (!file_exists($destinationPath)) {
                 mkdir($destinationPath, 0755, true);
             }
