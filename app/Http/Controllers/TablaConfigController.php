@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\GlobalVar;
 use App\Enums\MessageHttp;
 use App\Http\Requests\UpdateAcuerdosUsuariosRequest;
 use App\Http\Requests\UpdateArancelAbogadoRequest;
@@ -9,6 +10,7 @@ use App\Models\TablaConfig;
 use Illuminate\Http\Request;
 use App\Services\TablaConfigService;
 use App\Http\Requests\UpdateTablaConfigRequest;
+use Illuminate\Support\Facades\Log;
 
 class TablaConfigController extends Controller
 {
@@ -66,63 +68,77 @@ class TablaConfigController extends Controller
      */
     public function update(UpdateTablaConfigRequest $request)
     {
-        $data = $request->only([
-            'titulo_index',
-            'texto_index'
-        ]);
-        /*if ($request->hasFile('imagen_index')) {
-            $file = $request->file('imagen_index');
-            $pathindex = $file->store('uploads/img/config', 'public');
-            $data['imagen_index'] = $pathindex;
-        }*/
-        if ($request->hasFile('imagen_index')) {
-            $file = $request->file('imagen_index');
+        try {
+            /*$data = $request->only([
+                'titulo_index',
+                'texto_index'
+            ]);*/
+            $data = [];
+            
+            if ($request->hasFile('imagen_index')) {
+                $file = $request->file('imagen_index');
 
-            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-            $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/img/config'; //Para cargas en Prod
-            //$destinationPath = 'uploads/img/config'; //Para cargas en local
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
+                $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+                
+                $relativePath = 'uploads/img/config';
+                $destinationPath = GlobalVar::path($relativePath);
+                // DEBUG
+                //Log::info('Ruta destino:', ['path' => $destinationPath]);
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+                $file->move($destinationPath, $filename);
+                $data['imagen_index'] = $relativePath . '/' . $filename;
             }
-            $file->move($destinationPath, $filename);
-            $data['imagen_index'] = 'uploads/img/config/' . $filename;
-        }
 
-        if ($request->hasFile('imagen_index_mobil')) {
-            $file = $request->file('imagen_index_mobil');
-            //$pathindexMobil = $file->store('uploads/img/config', 'public');
-            //$data['imagen_index_mobil'] = $pathindexMobil;
-            // Nombre único para evitar sobrescribir archivos
-            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-            $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/img/config'; //Para cargas en prod
-            //$destinationPath = 'uploads/img/config'; //Para cargas en local
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
+            if ($request->hasFile('imagen_index_mobil')) {
+                $file = $request->file('imagen_index_mobil');
+                
+                $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+                
+                $relativePath = 'uploads/img/config';
+                $destinationPath = GlobalVar::path($relativePath);
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+                $file->move($destinationPath, $filename);
+                $data['imagen_index_mobil'] = $relativePath . '/' . $filename;
             }
-            $file->move($destinationPath, $filename);
-            $data['imagen_index_mobil'] = 'uploads/img/config/' . $filename;
-        }
-        if ($request->hasFile('imagen_logo')) {
-            $file = $request->file('imagen_logo');
-            //$pathlogo = $file->store('uploads/img/config', 'public');
-            //$data['imagen_logo'] = $pathlogo;
-            // Nombre único para evitar sobrescribir archivos
-            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-            $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/img/config'; //Para cargas en Prod
-            //$destinationPath = 'uploads/img/config'; //Para cargas en local
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
+            if ($request->hasFile('imagen_logo')) {
+                $file = $request->file('imagen_logo');
+                
+                $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+                //$destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/img/config'; //Para cargas en Prod
+                //$destinationPath = 'uploads/img/config'; //Para cargas en local
+                $relativePath = 'uploads/img/config';
+                $destinationPath = GlobalVar::path($relativePath);
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+                $file->move($destinationPath, $filename);
+                $data['imagen_logo'] = $relativePath . '/' . $filename;
             }
-            $file->move($destinationPath, $filename);
-            $data['imagen_logo'] = 'uploads/img/config/' . $filename;
+            $tablaConfig = $this->tablaConfigService->update($data, 1);
+            return response()->json([
+                'status' => 'success',
+                'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+                'data' => $tablaConfig
+            ] ,200);
+        } catch (\Throwable $e) {
+            Log::error('Error al actualizar imagenes index', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No se pudo actualizar imagenes index.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+                'line' => config('app.debug') ? $e->getLine() : null,
+            ], 500);
         }
-        $tablaConfig = $this->tablaConfigService->update($data, 1);
-        return response()->json([
-            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
-            'data' => $tablaConfig
-        ]);
     }
-
     /**
      * Remove the specified resource from storage.
      */
@@ -133,75 +149,122 @@ class TablaConfigController extends Controller
 
     public function updataArancelesAbogado(UpdateArancelAbogadoRequest $request)
     {
-        if ($request->hasFile('archivo_url')) {
-            $file = $request->file('archivo_url');
-            //$pathArancel = $file->store('uploads/img/aranceles', 'public');
-            //$data['archivo_url'] = $pathArancel;
-            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-            $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/img/aranceles';
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
+        try {
+            $data = [];
+
+            if ($request->hasFile('archivo_url')) {
+                $file = $request->file('archivo_url');
+
+                $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+
+                $relativePath = 'uploads/img/aranceles';
+                $destinationPath = GlobalVar::path($relativePath);
+                // DEBUG
+                //Log::info('Ruta destino:', ['path' => $destinationPath]);
+
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+                $file->move($destinationPath, $filename);
+                $data['archivo_url'] = $relativePath . '/' . $filename;
             }
-            $file->move($destinationPath, $filename);
-            $data['archivo_url'] = 'uploads/img/aranceles/' . $filename;
+            $data['nombre'] = $request->nombre;
+            $tablaConfig = $this->tablaConfigService->update($data, 1);
+            return response()->json([
+                'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+                'data' => $tablaConfig
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Error al actualizar aranceles abogado', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No se pudo actualizar el arancel.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+                'line' => config('app.debug') ? $e->getLine() : null,
+            ], 500);
         }
-        $data['nombre'] = $request->nombre;
-        $tablaConfig = $this->tablaConfigService->update($data, 1);
-        return response()->json([
-            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
-            'data' => $tablaConfig
-        ]);
     }
     public function obtenerArancelAbogados()
     {
         $datosAranceles = $this->tablaConfigService->obtenerArancelAbogados();
         return response()->json([
-            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+            'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
             'data' => $datosAranceles
         ]);
     }
     public function updataAcuerdosUsuarios(UpdateAcuerdosUsuariosRequest $request)
     {
-        if ($request->hasFile('url_acuerdo_lider')) {
-            $file = $request->file('url_acuerdo_lider');
-            //$pathArancel = $file->store('uploads/img/acuerdos', 'public');
-            //$data['url_acuerdo_lider'] = $pathArancel;
-            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-            $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/img/acuerdos';
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
+        try {
+            $data = [];
+
+            if ($request->hasFile('url_acuerdo_lider')) {
+                $file = $request->file('url_acuerdo_lider');
+
+                $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+
+                $relativePathLid = 'uploads/img/acuerdos';
+                $destinationPath = GlobalVar::path($relativePathLid);
+                // DEBUG
+                //Log::info('Ruta destino:', ['path' => $destinationPath]);
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+                $file->move($destinationPath, $filename);
+                $data['url_acuerdo_lider'] = $relativePathLid . '/' . $filename;
             }
-            $file->move($destinationPath, $filename);
-            $data['url_acuerdo_lider'] = 'uploads/img/acuerdos/' . $filename;
-        }
-        if ($request->hasFile('url_acuerdo_indep')) {
-            $file = $request->file('url_acuerdo_indep');
-            //$pathArancel = $file->store('uploads/img/acuerdos', 'public');
-            //$data['url_acuerdo_indep'] = $pathArancel;
-            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-            $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/img/acuerdos';
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
+            if ($request->hasFile('url_acuerdo_indep')) {
+                $file = $request->file('url_acuerdo_indep');
+
+                $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+
+                $relativePathInd = 'uploads/img/acuerdos';
+                $destinationPath = GlobalVar::path($relativePathInd);
+                // DEBUG
+                //Log::info('Ruta destino:', ['path' => $destinationPath]);
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+                $file->move($destinationPath, $filename);
+                $data['url_acuerdo_indep'] = $relativePathInd . '/' . $filename;
             }
-            $file->move($destinationPath, $filename);
-            $data['url_acuerdo_indep'] = 'uploads/img/acuerdos/' . $filename;
-        }
-        if ($request->hasFile('url_acuerdo_proc')) {
-            $file = $request->file('url_acuerdo_proc');
-            //$pathArancel = $file->store('uploads/img/acuerdos', 'public');
-            //$data['url_acuerdo_proc'] = $pathArancel;
-            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-            $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/img/acuerdos';
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
+            if ($request->hasFile('url_acuerdo_proc')) {
+                $file = $request->file('url_acuerdo_proc');
+
+                $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+
+                $relativePathProc = 'uploads/img/acuerdos';
+                $destinationPath = GlobalVar::path($relativePathProc);
+                // DEBUG
+                //Log::info('Ruta destino:', ['path' => $destinationPath]);
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+                $file->move($destinationPath, $filename);
+                $data['url_acuerdo_proc'] = $relativePathProc . '/' . $filename;
             }
-            $file->move($destinationPath, $filename);
-            $data['url_acuerdo_proc'] = 'uploads/img/acuerdos/' . $filename;
+            $tablaConfig = $this->tablaConfigService->update($data, 1);
+            return response()->json([
+                'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+                'data' => $tablaConfig
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Error al actualizar acuerdos', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No se pudo actualizar acuerdo.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+                'line' => config('app.debug') ? $e->getLine() : null,
+            ], 500);
         }
-        $tablaConfig = $this->tablaConfigService->update($data, 1);
-        return response()->json([
-            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
-            'data' => $tablaConfig
-        ]);
     }
 }

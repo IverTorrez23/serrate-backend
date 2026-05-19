@@ -105,45 +105,69 @@ class DocumentoController extends Controller
      */
     public function store(Request $request)
     {
-        if ($request->hasFile('archivo_url')) {
-            $file = $request->file('archivo_url');
-            if ($request->tipo === TipoDocumento::NORMAS) {
-                //$path = $file->store('uploads/pdf/NORMAS', 'public');
-                $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-                $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/pdf/NORMAS';
-                if (!file_exists($destinationPath)) {
-                    mkdir($destinationPath, 0755, true);
-                }
-                $file->move($destinationPath, $filename);
-                $path = 'uploads/pdf/NORMAS/' . $filename;
-            } else {
-                if ($request->tipo === TipoDocumento::TRAMITES) {
-                    //$path = $file->store('uploads/pdf/TRAMITES', 'public');
+        try {
+            // 1. Opcional pero recomendado: Validar antes de procesar
+            $request->validate([
+                'nombre' => 'required',
+                'archivo_url' => 'required|file|mimes:pdf|max:20480',
+                'tipo' => 'required',
+                'categoria_id' => 'required'
+            ]);
+
+            if ($request->hasFile('archivo_url')) {
+                $file = $request->file('archivo_url');
+                if ($request->tipo === TipoDocumento::NORMAS) {
+                    //$path = $file->store('uploads/pdf/NORMAS', 'public');
                     $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-                    $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/pdf/TRAMITES';
+                    //$destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/pdf/NORMAS'; //Para prod
+                    $destinationPath = 'uploads/pdf/NORMAS'; //Para cargas en local
                     if (!file_exists($destinationPath)) {
                         mkdir($destinationPath, 0755, true);
                     }
                     $file->move($destinationPath, $filename);
-                    $path = 'uploads/pdf/TRAMITES/' . $filename;
+                    $path = 'uploads/pdf/NORMAS/' . $filename;
+                } else {
+                    if ($request->tipo === TipoDocumento::TRAMITES) {
+                        //$path = $file->store('uploads/pdf/TRAMITES', 'public');
+                        $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+                        $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/pdf/TRAMITES'; //Para prod
+                        $destinationPath = 'uploads/pdf/TRAMITES'; //Para cargas en local
+                        if (!file_exists($destinationPath)) {
+                            mkdir($destinationPath, 0755, true);
+                        }
+                        $file->move($destinationPath, $filename);
+                        $path = 'uploads/pdf/TRAMITES/' . $filename;
+                    }
                 }
+            } else {
+                $path = null;
             }
-        } else {
-            $path = null;
-        }
 
-        $data = [
-            'nombre' => $request->nombre,
-            'archivo_url' => $path,
-            'tipo' => $request->tipo,
-            'categoria_id' => $request->categoria_id,
-        ];
-        $documento = $this->documentoService->store($data);
-        return response()
-            ->json([
-                'message' => MessageHttp::CREADO_CORRECTAMENTE,
-                'data' => $documento
-            ]);
+            $data = [
+                'nombre' => $request->nombre,
+                'archivo_url' => $path,
+                'tipo' => $request->tipo,
+                'categoria_id' => $request->categoria_id,
+            ];
+            $documento = $this->documentoService->store($data);
+            return response()
+                ->json([
+                    'message' => MessageHttp::CREADO_CORRECTAMENTE,
+                    'data' => $documento
+                ]);
+        } catch (\Exception $e) {
+            // 2. Si hubo un error y el archivo ya se había movido, lo borramos (Limpieza)
+            if (isset($path) && file_exists(public_path($path))) {
+                unlink(public_path($path));
+            }
+
+            // 3. Devolvemos el error detallado
+            return response()->json([
+                'message' => 'Ocurrió un error al intentar registrar el documento.',
+                'error' => $e->getMessage(), // Esto te dirá qué falló exactamente
+                'line' => $e->getLine()      // Útil para depurar en desarrollo
+            ], 500);
+        }
     }
 
     /**
@@ -177,7 +201,8 @@ class DocumentoController extends Controller
             if ($request->tipo === TipoDocumento::NORMAS) {
                 //$path = $file->store('uploads/pdf/NORMAS', 'public');
                 $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-                $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/pdf/NORMAS';
+                //$destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/pdf/NORMAS';
+                $destinationPath = 'uploads/pdf/NORMAS'; //Para cargas en local
                 if (!file_exists($destinationPath)) {
                     mkdir($destinationPath, 0755, true);
                 }
@@ -187,7 +212,8 @@ class DocumentoController extends Controller
                 if ($request->tipo === TipoDocumento::TRAMITES) {
                     //$path = $file->store('uploads/pdf/TRAMITES', 'public');
                     $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-                    $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/pdf/TRAMITES';
+                    //$destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/pdf/TRAMITES';
+                    $destinationPath = 'uploads/pdf/TRAMITES'; //Para cargas en local
                     if (!file_exists($destinationPath)) {
                         mkdir($destinationPath, 0755, true);
                     }
