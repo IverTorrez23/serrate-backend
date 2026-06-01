@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\GlobalVar;
 use App\Constants\TipoDocumento;
 use App\Enums\MessageHttp;
 use App\Http\Requests\UpdateDocumentoRequest;
@@ -120,7 +121,8 @@ class DocumentoController extends Controller
                     //$path = $file->store('uploads/pdf/NORMAS', 'public');
                     $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
                     //$destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/pdf/NORMAS'; //Para prod
-                    $destinationPath = 'uploads/pdf/NORMAS'; //Para cargas en local
+                    $relativePath = 'uploads/pdf/NORMAS'; //Para cargas en local
+                    $destinationPath = GlobalVar::path($relativePath);
                     if (!file_exists($destinationPath)) {
                         mkdir($destinationPath, 0755, true);
                     }
@@ -130,8 +132,9 @@ class DocumentoController extends Controller
                     if ($request->tipo === TipoDocumento::TRAMITES) {
                         //$path = $file->store('uploads/pdf/TRAMITES', 'public');
                         $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-                        $destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/pdf/TRAMITES'; //Para prod
-                        $destinationPath = 'uploads/pdf/TRAMITES'; //Para cargas en local
+                        //$destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/pdf/TRAMITES'; //Para prod
+                        $relativePath = 'uploads/pdf/TRAMITES'; //Para cargas en local
+                        $destinationPath = GlobalVar::path($relativePath);
                         if (!file_exists($destinationPath)) {
                             mkdir($destinationPath, 0755, true);
                         }
@@ -202,7 +205,8 @@ class DocumentoController extends Controller
                 //$path = $file->store('uploads/pdf/NORMAS', 'public');
                 $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
                 //$destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/pdf/NORMAS';
-                $destinationPath = 'uploads/pdf/NORMAS'; //Para cargas en local
+                $relativePath = 'uploads/pdf/NORMAS'; //Para cargas en local
+                $destinationPath = GlobalVar::path($relativePath);
                 if (!file_exists($destinationPath)) {
                     mkdir($destinationPath, 0755, true);
                 }
@@ -213,7 +217,8 @@ class DocumentoController extends Controller
                     //$path = $file->store('uploads/pdf/TRAMITES', 'public');
                     $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
                     //$destinationPath = '/home/sites/htyg9449/public_html/api.teleprocuraduria.lex.net.bo/uploads/pdf/TRAMITES';
-                    $destinationPath = 'uploads/pdf/TRAMITES'; //Para cargas en local
+                    $relativePath = 'uploads/pdf/TRAMITES'; //Para cargas en local
+                    $destinationPath = GlobalVar::path($relativePath);
                     if (!file_exists($destinationPath)) {
                         mkdir($destinationPath, 0755, true);
                     }
