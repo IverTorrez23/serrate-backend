@@ -24,8 +24,8 @@ class UpdateVideoRequest extends FormRequest
         //por PATCH
         return [
             'link' => ['sometimes', 'string', 'max:150'],
-            'titulo' => ['sometimes', 'string', 'max:50'],
-            'descripcion' => ['sometimes', 'string', 'max:100'],
+            'titulo' => ['sometimes', 'string', 'max:80'],
+            'descripcion' => ['sometimes', 'string', 'max:300'],
             'tipo' => ['sometimes', 'string', 'max:50'],
         ];
     }
