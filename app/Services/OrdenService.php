@@ -986,6 +986,7 @@ class OrdenService
                     'id'                  => $orden->id,
                     'entrega_informacion'        => $orden->entrega_informacion,
                     'detalle_informacion' => optional($orden->descarga)->detalle_informacion,
+                    'fecha_inicio'           => $orden->fecha_inicio,
                     'fecha_fin'           => $orden->fecha_fin,
                     'prioridad'        => $orden->prioridad,
                     'condicion'        => optional($orden->cotizacion)->condicion,
