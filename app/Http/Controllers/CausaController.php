@@ -1217,4 +1217,13 @@ class CausaController extends Controller
             'tribunal_dominante' => $tribunalDominante?->claseTribunal?->nombre,
         ];
     }
+    public function listarCodigoCausas()
+    {
+        $causas = $this->causaService->listarCodigoCausas();
+        $data = [
+            'message' => MessageHttp::OBTENIDOS_CORRECTAMENTE,
+            'data' => $causas
+        ];
+        return response()->json($data);
+    }
 }

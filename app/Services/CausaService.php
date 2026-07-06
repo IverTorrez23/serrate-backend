@@ -6,6 +6,7 @@ use App\Constants\Estado;
 use App\Constants\EstadoCausa;
 use App\Constants\EtapaOrden;
 use App\Constants\TipoUsuario;
+use Illuminate\Support\Facades\DB;
 use App\Models\Causa;
 use App\Models\Orden;
 use Illuminate\Http\Request;
@@ -324,5 +325,18 @@ class CausaService
             ->with(['materia', 'tipoLegal', 'usuario.persona'])
             ->get();
         return $causas;
+    }
+    public function listarCodigoCausas()
+    {
+        return Causa::query()
+        ->join('materias', 'materias.id', '=', 'causas.materia_id')
+        ->join('tipo_legals', 'tipo_legals.id', '=', 'causas.tipolegal_id')
+        ->where('causas.es_eliminado', 0)
+        ->select(
+            'causas.id',
+            'causas.nombre',
+            DB::raw("CONCAT(materias.abreviatura, '-', tipo_legals.abreviatura, '-', causas.id) as codigo_causa")
+        )
+        ->get();
     }
 }

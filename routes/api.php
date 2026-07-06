@@ -219,6 +219,7 @@ Route::prefix('v1')->group(function () {
         Route::get('causas/listado/saldos-activos', [CausaController::class, 'listadoCausasActivasConBilleteras']);
         Route::get('causas/listado/saldos-terminados', [CausaController::class, 'listadoCausasTerminadasConBilleteras']);
         Route::get('causas/datos-tribunal/{causaId}', [CausaController::class, 'obtenerNombreTribunalDominante']);
+        Route::get('causas/listado-codigos/nuevo', [CausaController::class, 'listarCodigoCausas']);
         //Tribunal
         Route::get('tribunal', [TribunalController::class, 'index']);
         Route::post('tribunal', [TribunalController::class, 'store']);
