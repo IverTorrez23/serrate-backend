@@ -40,6 +40,7 @@ use App\Http\Controllers\VideoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BilleteraController;
+use App\Http\Controllers\CuponController;
 use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\ParametroVigenciaController;
 use App\Http\Controllers\ProcuradorPagoController;
@@ -120,6 +121,8 @@ Route::prefix('v1')->group(function () {
     Route::get('documentos/listado/tramites/categoria/{categoria}', [DocumentoController::class, 'listarDocTramitesActivas']);
     //Videos
     Route::get('videos/listado', [VideoController::class, 'listarActivos']);
+    //paquetes
+    Route::get('paquetes/promocion/{paquete}', [PaqueteController::class, 'showPaquetePromocion']);
 
     Route::middleware(['auth:sanctum'])->group(function () {
         //Materia
@@ -468,5 +471,12 @@ Route::prefix('v1')->group(function () {
         Route::get('notificacion', [NotificacionController::class, 'index']);
         Route::patch('notificacion/{notificacion}', [NotificacionController::class, 'update']);
         Route::patch('notificacion/eliminar/{notificacion}', [NotificacionController::class, 'destroy']);
+        //Cupon
+        Route::get('cupon', [CuponController::class, 'index']); 
+        Route::post('cupon', [CuponController::class, 'store']);
+        Route::post('cupon/generar-lote', [CuponController::class, 'storeLote']);
+        Route::get('cupon/paquete/{paqueteId}', [CuponController::class, 'listadoPorPaquete']);
+        Route::post('cupon/canjear', [CuponController::class, 'canjear']);
+        Route::patch('cupon/eliminar/{cupon}', [CuponController::class, 'destroy']);
     });
 });

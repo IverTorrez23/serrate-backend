@@ -19,6 +19,7 @@ class Paquete extends Model
         'tiene_fecha_limite',
         'fecha_limite_compra',
         'tipo',
+        'es_promocion',
         'estado',
         'es_eliminado'
     ];

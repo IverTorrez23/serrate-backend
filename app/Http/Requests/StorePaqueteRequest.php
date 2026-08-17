@@ -29,6 +29,7 @@ class StorePaqueteRequest extends FormRequest
             'tiene_fecha_limite' => ['required','numeric'],
             'fecha_limite_compra' => ['sometimes','date_format:Y-m-d'],
             'tipo'=>['required','string','max:50'],
+            'es_promocion'=>['required','numeric'],
         ];
     }
 }
