@@ -29,6 +29,7 @@ class UpdatePaqueteRequest extends FormRequest
             'tiene_fecha_limite' => ['sometimes','numeric'],
             'fecha_limite_compra' => ['sometimes'],
             'tipo'=>['sometimes','string','max:50'],
+            'es_promocion'=>['sometimes','numeric'],
         ];
     }
 }

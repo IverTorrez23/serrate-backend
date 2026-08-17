@@ -22,6 +22,7 @@ return new class extends Migration
             $table->integer('tiene_fecha_limite')->comment('1 tiene fecha limite de compra, 0 no tiene fecha limite de compra');
             $table->date('fecha_limite_compra')->nullable()->comment('fecha limite hasta donde se puede comprar el paquete');
             $table->string('tipo', 50)->comment('para que tipo de usuario sera, Abogado lider o abogado independiente');
+            $table->integer('es_promocion')->nullable()->comment('1 indica que es un paquete de promocion, osea se usa con cupones, 0 es paquete para ventas');
             $table->string('estado', 20)->comment('estado ACTIVO,INACTIVO');
             $table->integer('es_eliminado')->comment('1 es eliminado, 0 no es eliminado');
             $table->timestamps();

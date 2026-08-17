@@ -13,6 +13,16 @@ use Illuminate\Support\Facades\Auth;
 
 class CompraPaqueteService
 {
+    protected ParametroVigenciaService $parametroVigenciaService;
+    protected CausaService $causaService;
+
+    public function __construct(
+        ParametroVigenciaService $parametroVigenciaService,
+        CausaService $causaService
+    ) {
+        $this->parametroVigenciaService = $parametroVigenciaService;
+        $this->causaService = $causaService;
+    }
     public function index()
     {
         $compraPaquete = CompraPaquete::where('es_eliminado', 0)
@@ -87,5 +97,52 @@ class CompraPaqueteService
             ])
             ->get();
         return $compraPaquetes;
+    }
+    public function registroCompraPaqueteConCupon($idUser,$cantidadDiasPaquete,$idPaquete,$precioPaquete )
+    {
+        $fechaHoraSistema = Carbon::now('America/La_Paz')->format('Y-m-d H:i');
+        //DB::beginTransaction();
+            /* obtener la fecha de vigencia general del usuario*/
+            $parametroVigencia = $this->parametroVigenciaService->obtenerUnoPorUsuario($idUser);
+
+
+            $fechaHora = Carbon::now('America/La_Paz')->toDateTimeString();
+            //*Actualiza la fecha del parametro de vigencia
+            if ($parametroVigencia->fecha_ultima_vigencia < $fechaHoraSistema) {
+                $fechaInicioVigencia = Carbon::now('America/La_Paz');
+                $fechaFinalVigencia = $fechaInicioVigencia->copy()->addDays($cantidadDiasPaquete);
+                //Fecha vigencia general
+                $fechaFinalVigenciaGeneral = $fechaFinalVigencia;
+            } else { //Por falso se aumenta a la fecha general
+                $fechaFinalVigenciaGeneralActual = Carbon::parse($parametroVigencia->fecha_ultima_vigencia); //parseo de ultima fecha vigencia
+                $fechaFinalVigenciaGeneralActual->addMinute(); // Aumenta 1 minuto
+
+                $fechaInicioVigencia = $fechaFinalVigenciaGeneralActual;
+                $fechaFinalVigencia = $fechaInicioVigencia->copy()->addDays($cantidadDiasPaquete);
+
+                $fechaFinalVigenciaGeneral = $fechaFinalVigencia; //* $nuevaFechaVigenciaGeneral;
+            }
+            $dataParametroVigencia = [
+                'fecha_ultima_vigencia' => $fechaFinalVigenciaGeneral->format('Y-m-d H:i')
+            ];
+            $this->parametroVigenciaService->update($dataParametroVigencia, $parametroVigencia->id);
+
+            //*Carga de datos
+            $data = [
+                'monto' => $precioPaquete,
+                'fecha_ini_vigencia' => $fechaInicioVigencia->format('Y-m-d H:i'),
+                'fecha_fin_vigencia' => $fechaFinalVigencia->format('Y-m-d H:i'),
+                'fecha_compra' => $fechaHora,
+                'dias_vigente' => $cantidadDiasPaquete,
+                'paquete_id' => $idPaquete,
+                'usuario_id' => $idUser,
+            ];
+            $compraPaquete = $this->store($data);
+
+            //Se activan las causas que estaban congeladas
+            $causas= $this->causaService->activarEstadoPorUsuario($idUser);
+            return $compraPaquete;
+
+           // DB::commit();  
     }
 }

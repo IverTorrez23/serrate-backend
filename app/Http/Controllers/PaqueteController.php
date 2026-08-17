@@ -92,7 +92,8 @@ class PaqueteController extends Controller
             'usuario_id' => Auth::user()->id,
             'tiene_fecha_limite' => $request->tiene_fecha_limite,
             'fecha_limite_compra' => $request->fecha_limite_compra,
-            'tipo' => $request->tipo
+            'tipo' => $request->tipo,
+            'es_promocion' => $request->es_promocion
         ];
         $paquete = $this->paqueteService->store($data);
         return response()->json([
@@ -108,6 +109,27 @@ class PaqueteController extends Controller
     {
         try {
             $paquete = $this->paqueteService->obtenerUno($paquete->id);
+            return response()->json([
+                'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
+                'data' => $paquete
+            ], 200);
+        } catch (ModelNotFoundException  $e) {
+            Log::error('Paquete no encontrado: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'El paquete solicitado no se encontró.',
+                'error' => 'Paquete no encontrado'
+            ], 404);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener registro',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    public function showPaquetePromocion(Paquete $paquete)
+    {
+        try {
+            $paquete = $this->paqueteService->obtenerUnoPromocion($paquete->id);
             return response()->json([
                 'message' => MessageHttp::OBTENIDO_CORRECTAMENTE,
                 'data' => $paquete
@@ -146,7 +168,8 @@ class PaqueteController extends Controller
             'descripcion',
             'tiene_fecha_limite',
             'fecha_limite_compra',
-            'tipo'
+            'tipo',
+            'es_promocion'
         ]);
         if ($request->tiene_fecha_limite === 0) {
             $data['fecha_limite_compra'] = null;

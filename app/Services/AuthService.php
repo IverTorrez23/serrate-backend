@@ -25,14 +25,24 @@ class AuthService
     public function crearUsuario(array $data): JsonResponse
     {
         try {
-            DB::transaction(fn() => $this->createUserWithRelations($data));
-            return ResponseService::success(message: SuccessMessages::CREADO_CORRECTAMENTE);
+            /*DB::transaction(fn() => $this->createUserWithRelations($data));
+            return ResponseService::success(message: SuccessMessages::CREADO_CORRECTAMENTE);*/
+            $user = DB::transaction(function () use ($data) {
+                return $this->createUserWithRelations($data);
+            });
+
+            $user->load(['persona']);
+
+            return $this->respuestaAutenticacion(
+                $user,
+                'Usuario creado e inicio de sesión exitoso.'
+            );
         } catch (\Exception $e) {
             Log::error('Error al crear registro: ' . $e->getMessage());
             return ResponseService::error(ErrorMessages::ERROR_CREAR, 500);
         }
     }
-    private function createUserWithRelations(array $data): void
+    private function createUserWithRelations(array $data): User
     {
         $abogado_id = (auth()->check() && $data['tipo'] === TipoUsuario::ABOGADO_DEPENDIENTE) ? auth()->id() : 0;
 
@@ -44,12 +54,13 @@ class AuthService
             'abogado_id' => $abogado_id,
             'opciones_moto' => isset($data['opciones_moto']) ? json_encode($data['opciones_moto']) : null,
             'estado' => Estado::ACTIVO,
-            'es_eliminado' => false,
+            'es_eliminado' => 0,
         ]);
 
         $this->createPersona($data, $user);
         $this->createBilletera($data, $user);
         $this->createParametroVigencia($data, $user);
+        return $user;
     }
 
     private function createPersona(array $data, User $user): void
@@ -115,6 +126,7 @@ class AuthService
         try {
             $user = User::where('email', $credentials['email'])
                 ->where('estado', 'ACTIVO')
+                ->where('es_eliminado', 0)
                 ->first();
 
             if (!$user) {
@@ -135,12 +147,16 @@ class AuthService
 
             $user->load(['persona']);
 
-            return ResponseService::success([
+            /*return ResponseService::success([
                 'user' => new UserResource($user),
                 'access_token' => $user->createToken('auth_token')->plainTextToken,
                 'token_type' => 'Bearer',
                 'expires_at' => now('America/La_Paz')->addMinutes(60)->format('Y-m-d H:i:s'),
-            ], GeneralMessages::INICIO_SESION_EXITOSO);
+            ], GeneralMessages::INICIO_SESION_EXITOSO);*/
+            return $this->respuestaAutenticacion(
+                $user,
+                GeneralMessages::INICIO_SESION_EXITOSO
+            );
         } catch (Exception $e) {
             return ResponseService::error(ErrorMessages::ERROR_LOGIN, 500);
         }
@@ -161,5 +177,20 @@ class AuthService
         } catch (Exception $e) {
             return ResponseService::error('Error inesperado al cerrar sesión.', 500);
         }
+    }
+    private function respuestaAutenticacion(
+        User $user,
+        string $mensaje
+    ): JsonResponse {
+        return ResponseService::success([
+            'user' => new UserResource($user),
+            'access_token' => $user
+                ->createToken('auth_token')
+                ->plainTextToken,
+            'token_type' => 'Bearer',
+            'expires_at' => now('America/La_Paz')
+                ->addMinutes(60)
+                ->format('Y-m-d H:i:s'),
+        ], $mensaje);
     }
 }
