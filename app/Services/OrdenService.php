@@ -231,6 +231,7 @@ class OrdenService
                 'propina',
                 'causa_id',
                 'procurador_id',
+                'monto_sug_pres',
                 'matriz_id',
                 'usuario_id',
                 'estado',
@@ -460,6 +461,7 @@ class OrdenService
             'procurador_id' => $data['procurador_id'],
             'matriz_id' => $data['matriz_id'],
             'usuario_id' => $data['usuario_id'],
+            'monto_sug_pres' => $data['monto_sug_pres'],
             'estado' => Estado::ACTIVO,
             'es_eliminado' => 0
         ]);

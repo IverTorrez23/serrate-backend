@@ -35,7 +35,7 @@ return new class extends Migration
             $table->integer('procurador_id')->comment('id del usuario procurador, o procurador maestro');
             $table->integer('matriz_id')->comment('id de la tabla matriz_cotizacions');
             $table->integer('usuario_id')->comment('id de la tabla user, quien giro la orden');
-
+            $table->decimal('monto_sug_pres',10,2)->comment('monto de sugerencia de presupuesto');
             $table->string('estado', 20)->comment('estado ACTIVO,INACTIVO');
             $table->integer('es_eliminado')->comment('1 es eliminado, 0 no es eliminado');
             $table->timestamps();

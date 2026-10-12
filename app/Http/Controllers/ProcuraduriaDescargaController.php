@@ -81,10 +81,10 @@ class ProcuraduriaDescargaController extends Controller
         $presupuesto = $this->presupuestoService->obtenerUnoPorOrdenId($request->orden_id);
         if ($gastoDescarga > $presupuesto->monto) {
             $montoProbable = $gastoDescarga - $presupuesto->monto;
-            if ($this->causaService->noPasoValidacionEAPECausa($orden->causa_id, $montoProbable)) {
+            if ($this->causaService->noPasoValidacionEAPECausa($orden->causa_id, $montoProbable, 0)) {
                 return response()->json([
                     'message' => 'ALERTA!
-             Su solicitud no puede concretarse por falta de saldo en la billetera. Por favor, agregue saldo y luego vuelva a intentarlo.',
+             Su solicitud no puede concretarse por falta de saldo disponible en la billetera. Por favor, agregue saldo y luego vuelva a intentarlo.',
                     'data' => null
                 ], 409);
             }

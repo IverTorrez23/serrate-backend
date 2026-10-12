@@ -46,6 +46,8 @@ use App\Services\ContadorOrdenCuentasConciliadaService;
 use App\Services\ParametroVigenciaService;
 use App\Services\SeguimientoLider\ContadorOrdenesDeLiderService;
 use App\Services\SeguimientoLider\ListadoOrdenesSeguimientoDeLiderService;
+use App\Services\SugerenciaGastoService;
+use App\Services\SugerenciaOrdenService;
 
 class OrdenController extends Controller
 {
@@ -78,6 +80,8 @@ class OrdenController extends Controller
     protected $contadorOrdenesDeLiderService;
     protected $listadoOrdenesSeguimientoDeLiderService;
     protected $parametroVigenciaService;
+    protected $sugerenciaGastoService;
+    protected $sugerenciaOrdenService;
 
     public function __construct(
         MatrizCotizacionService $matrizCotizacionService,
@@ -109,7 +113,10 @@ class OrdenController extends Controller
         //Orden de lider
         ContadorOrdenesDeLiderService $contadorOrdenesDeLiderService,
         ListadoOrdenesSeguimientoDeLiderService $listadoOrdenesSeguimientoDeLiderService,
-        ParametroVigenciaService $parametroVigenciaService
+        ParametroVigenciaService $parametroVigenciaService,
+        /////////
+        SugerenciaGastoService $sugerenciaGastoService,
+        SugerenciaOrdenService $sugerenciaOrdenService
     ) {
         $this->matrizCotizacionService = $matrizCotizacionService;
         $this->cotizacionService = $cotizacionService;
@@ -143,6 +150,9 @@ class OrdenController extends Controller
         $this->contadorOrdenesDeLiderService = $contadorOrdenesDeLiderService;
         $this->listadoOrdenesSeguimientoDeLiderService = $listadoOrdenesSeguimientoDeLiderService;
         $this->parametroVigenciaService = $parametroVigenciaService;
+        /////
+        $this->sugerenciaGastoService = $sugerenciaGastoService;
+        $this->sugerenciaOrdenService = $sugerenciaOrdenService;
     }
 
     public function index(Request $request)
@@ -202,11 +212,12 @@ class OrdenController extends Controller
         //Otiene la cotizacion
         $response = $this->obtenetMatrizCotizacion($request->fecha_inicio, $request->fecha_fin, $request->prioridad);
         $matrizCotizacion = $response['matrizCotizacion'];
-
-        if ($this->causaService->noPasoValidacionEAPECausa($request->causa_id, $matrizCotizacion->precio_venta)) {
+        
+        if ($this->causaService->noPasoValidacionEAPECausa($request->causa_id, $matrizCotizacion->precio_venta, $request->monto_sug_pres)) {
+            $monto11 = $matrizCotizacion->precio_venta + $request->monto_sug_pres;
             return response()->json([
                 'message' => 'ALERTA!
-                 Su solicitud no puede concretarse por falta de saldo en la billetera. Por favor, agregue saldo y luego vuelva a intentarlo.',
+                 Su solicitud no puede concretarse por falta de saldo disponible en la billetera. Por favor, agregue saldo y luego vuelva a intentarlo.'.$monto11,
                 'data' => null
             ], 409);
         }
@@ -232,13 +243,14 @@ class OrdenController extends Controller
                 'fecha_ini_bandera' => $request->fecha_inicio,
                 'notificado' => 0,
                 'lugar_ejecucion' => $request->lugar_ejecucion,
-                'sugerencia_presupuesto' => null, //$request->sugerencia_presupuesto, // vacio
+                'sugerencia_presupuesto' => $request->sugerencia_presupuesto,
                 'tiene_propina' => $request->tiene_propina,
                 'propina' => $request->propina,
                 'causa_id' => $request->causa_id,
                 'procurador_id' => $request->procurador_id,
                 'matriz_id' => $matrizCotizacion->id,
-                'usuario_id' => Auth::user()->id
+                'usuario_id' => Auth::user()->id,
+                'monto_sug_pres' => $request->monto_sug_pres
             ];
 
             $orden = $this->ordenService->store($data);
@@ -254,6 +266,41 @@ class OrdenController extends Controller
             ];
             // Llamar al método store del servicio
             $cotizacion = $this->cotizacionService->store($dataCotizacion);
+
+            //registro de sugerencia de presupuesto recien creadas
+            foreach (
+                $request->input('sugerencias_temporales', [])
+                as $sugerencia
+            ) {
+                $data = [
+                    'detalle' => $sugerencia['detalle'],
+                    'monto' => $sugerencia['monto'],
+                    'orden_id' => $orden->id,
+                    'usuario_id' => Auth::user()->id,
+                ];
+                $sugerenciaGasto = $this->sugerenciaGastoService->store($data);
+                //registro en la tabla sugerencia_ordens
+
+                $dataSugOr = [
+                    'orden_id' => $orden->id,
+                    'sugerencia_gasto_id' => $sugerenciaGasto->id,
+                    'usuario_id' => Auth::user()->id,
+                ];
+                $sugerenciaOrden = $this->sugerenciaOrdenService->store($dataSugOr);
+            }
+
+            //registro de las segerencias generales a la orden
+            foreach (
+                $request->input('sugerencias_seleccionadas', [])
+                as $sugerencia
+            ) {
+                $dataSugOr = [
+                    'orden_id' => $orden->id,
+                    'sugerencia_gasto_id' => $sugerencia['id'],
+                    'usuario_id' => Auth::user()->id,
+                ];
+                $sugerenciaOrden = $this->sugerenciaOrdenService->store($dataSugOr);
+            }
             DB::commit();
             return response()->json([
                 'message' => MessageHttp::CREADO_CORRECTAMENTE,
@@ -312,10 +359,10 @@ class OrdenController extends Controller
         $cotizacion = $this->cotizacionService->obtenerPorIdOrden($orden->id);
         $diferenciaCotizacion = $matrizCotizacion->precio_venta - $cotizacion->venta;
         if ($diferenciaCotizacion > 0) {
-            if ($this->causaService->noPasoValidacionEAPECausa($request->causa_id, $diferenciaCotizacion)) {
+            if ($this->causaService->noPasoValidacionEAPECausa($request->causa_id, $diferenciaCotizacion, $request->monto_sug_pres)) {
                 return response()->json([
                     'message' => 'ALERTA!
-                 Su solicitud no puede concretarse por falta de saldo en la billetera. Por favor, agregue saldo y luego vuelva a intentarlo.',
+                 Su solicitud no puede concretarse por falta de saldo disponible en la billetera. Por favor, agregue saldo y luego vuelva a intentarlo.',
                     'data' => null
                 ], 409);
             }
@@ -335,7 +382,9 @@ class OrdenController extends Controller
                 'lugar_ejecucion',
                 'tiene_propina',
                 'propina',
-                'procurador_id'
+                'procurador_id',
+                'sugerencia_presupuesto',
+                'monto_sug_pres'
             ]);
             $data['matriz_id'] = $matrizCotizacion->id;
             $data['plazo_hora'] = $difference;
@@ -352,6 +401,43 @@ class OrdenController extends Controller
             ];
 
             $cotizacion = $this->cotizacionService->update($dataCotizacion, $cotizacion->id);
+
+            //eliminacion de los registros de la tabla sugerencia_orden, para crear nuevos registros
+            $elimSugOrden = $this->sugerenciaOrdenService->eliminarPorOrdenId($orden->id);
+            //registro de sugerencia de presupuesto recien creadas
+            foreach (
+                $request->input('sugerencias_temporales', [])
+                as $sugerencia
+            ) {
+                $data = [
+                    'detalle' => $sugerencia['detalle'],
+                    'monto' => $sugerencia['monto'],
+                    'orden_id' => $orden->id,
+                    'usuario_id' => Auth::user()->id,
+                ];
+                $sugerenciaGasto = $this->sugerenciaGastoService->store($data);
+                //registro en la tabla sugerencia_ordens
+
+                $dataSugOr = [
+                    'orden_id' => $orden->id,
+                    'sugerencia_gasto_id' => $sugerenciaGasto->id,
+                    'usuario_id' => Auth::user()->id,
+                ];
+                $sugerenciaOrden = $this->sugerenciaOrdenService->store($dataSugOr);
+            }
+
+            //registro de las segerencias generales a la orden
+            foreach (
+                $request->input('sugerencias_seleccionadas', [])
+                as $sugerencia
+            ) {
+                $dataSugOr = [
+                    'orden_id' => $orden->id,
+                    'sugerencia_gasto_id' => $sugerencia['id'],
+                    'usuario_id' => Auth::user()->id,
+                ];
+                $sugerenciaOrden = $this->sugerenciaOrdenService->store($dataSugOr);
+            }
 
             DB::commit();
             $data = [
@@ -445,18 +531,82 @@ class OrdenController extends Controller
     }
     public function sugerirPresupuesto(UpdateOrdenRequest $request, Orden $orden)
     {
-        if ($orden->etapa_orden === EtapaOrden::GIRADA || $orden->etapa_orden === EtapaOrden::PREPRESUPUESTADA) {
+        if (
+            $orden->etapa_orden !== EtapaOrden::GIRADA &&
+            $orden->etapa_orden !== EtapaOrden::PREPRESUPUESTADA
+        ) {
+            return response()->json([
+                'message' => 'No se puede sugerir presupuesto, porque ya se giró el presupuesto.',
+                'data' => null
+            ], 409);
+        }
+        if ($this->causaService->noPasoValidacionEAPECausa($orden->causa_id, 0, $request->monto_sug_pres)) {
+                return response()->json([
+                    'message' => 'ALERTA!
+                 Su solicitud no puede concretarse por falta de saldo disponible en la billetera. Por favor, agregue saldo y luego vuelva a intentarlo.',
+                    'data' => null
+                ], 409);
+            }
+        
+        DB::beginTransaction();
+        try {
             $data['sugerencia_presupuesto'] = $request->sugerencia_presupuesto;
+            $data['monto_sug_pres'] = $request->monto_sug_pres;
             $data['etapa_orden'] = EtapaOrden::PREPRESUPUESTADA;
             $orden = $this->ordenService->update($data, $orden->id);
-        } else {
-            return 'No se puede sugerir presupuesto, porque la se giro el presupuesto';
-        }
 
-        return response()->json([
-            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
-            'data' => $orden
-        ], 200);
+            //eliminacion de los registros de la tabla sugerencia_orden, para crear nuevos registros
+            $elimSugOrden = $this->sugerenciaOrdenService->eliminarPorOrdenId($orden->id);
+            //registro de sugerencia de presupuesto recien creadas
+            foreach (
+                $request->input('sugerencias_temporales', [])
+                as $sugerencia
+            ) {
+                $data = [
+                    'detalle' => $sugerencia['detalle'],
+                    'monto' => $sugerencia['monto'],
+                    'orden_id' => $orden->id,
+                    'usuario_id' => Auth::user()->id,
+                ];
+                $sugerenciaGasto = $this->sugerenciaGastoService->store($data);
+                //registro en la tabla sugerencia_ordens
+
+                $dataSugOr = [
+                    'orden_id' => $orden->id,
+                    'sugerencia_gasto_id' => $sugerenciaGasto->id,
+                    'usuario_id' => Auth::user()->id,
+                ];
+                $sugerenciaOrden = $this->sugerenciaOrdenService->store($dataSugOr);
+            }
+
+            //registro de las segerencias generales a la orden
+            foreach (
+                $request->input('sugerencias_seleccionadas', [])
+                as $sugerencia
+            ) {
+                $dataSugOr = [
+                    'orden_id' => $orden->id,
+                    'sugerencia_gasto_id' => $sugerencia['id'],
+                    'usuario_id' => Auth::user()->id,
+                ];
+                $sugerenciaOrden = $this->sugerenciaOrdenService->store($dataSugOr);
+            }
+
+            DB::commit();
+            $data = [
+                'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+                'data' => $orden
+            ];
+            return response()->json($data);
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Error actualizando la orden: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Error actualizando la orden',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
     public function ordenesParaEntregarPresupuesto($procuradorId)
     {

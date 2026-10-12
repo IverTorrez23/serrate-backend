@@ -102,10 +102,10 @@ class TransaccionesCausaController extends Controller
                     'data' => null
                 ], 409);
             }
-            if ($this->causaService->noPasoValidacionEAPECausa($request->causa_origen_destino, $monto)) {
+            if ($this->causaService->noPasoValidacionEAPECausa($request->causa_origen_destino, $monto, 0)) {
                 return response()->json([
                     'message' => 'ALERTA!
-                 Su solicitud no puede concretarse por falta de saldo en la billetera de causa. Por favor, agregue saldo y luego vuelva a intentarlo.',
+                 Su solicitud no puede concretarse por falta de saldo disponible en la billetera de causa. Por favor, agregue saldo y luego vuelva a intentarlo.',
                     'data' => null
                 ], 409);
             }
@@ -207,10 +207,10 @@ class TransaccionesCausaController extends Controller
                 'data' => null
             ], 409);
         }
-        if ($this->causaService->noPasoValidacionEAPECausa($causaId, $monto)) {
+        if ($this->causaService->noPasoValidacionEAPECausa($causaId, $monto, 0)) {
             return response()->json([
                 'message' => 'ALERTA!
-             Su solicitud no puede concretarse por falta de saldo en la billetera de causa. Por favor, agregue saldo y luego vuelva a intentarlo.',
+             Su solicitud no puede concretarse por falta de saldo disponible en la billetera de causa. Por favor, agregue saldo y luego vuelva a intentarlo.',
                 'data' => null
             ], 409);
         }
