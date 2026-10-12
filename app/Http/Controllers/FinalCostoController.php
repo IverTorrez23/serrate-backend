@@ -100,10 +100,10 @@ class FinalCostoController extends Controller
         //Evaluacion EAP
         $orden = Orden::findOrFail($finalCosto->orden_id);
         $montoProbable = $request->costo_procesal_venta - $finalCosto->costo_procesal_compra;
-        if ($this->causaService->noPasoValidacionEAPECausa($orden->causa_id, $montoProbable)) {
+        if ($this->causaService->noPasoValidacionEAPECausa($orden->causa_id, $montoProbable,0)) {
             return response()->json([
                 'message' => 'ALERTA!
-     Su solicitud no puede concretarse por falta de saldo en la billetera. Por favor, agregue saldo y luego vuelva a intentarlo.',
+     Su solicitud no puede concretarse por falta de saldo disponible en la billetera. Por favor, agregue saldo y luego vuelva a intentarlo.',
                 'data' => null
             ], 409);
         }

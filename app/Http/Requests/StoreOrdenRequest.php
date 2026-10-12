@@ -32,6 +32,8 @@ class StoreOrdenRequest extends FormRequest
             'propina' => ['required', 'numeric'],
             'causa_id' => ['required'],
             'procurador_id' => ['required'],
+            'sugerencia_presupuesto' => ['sometimes'],
+            'monto_sug_pres' => ['numeric'],
         ];
     }
 }

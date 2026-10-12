@@ -32,7 +32,8 @@ class UpdateOrdenRequest extends FormRequest
             'tiene_propina'=>['sometimes','numeric'],
             'propina'=>['sometimes','numeric'],
             'procurador_id'=>['sometimes'],
-          //  'sugerencia_presupuesto'=>['sometimes','string'],
+            'sugerencia_presupuesto' => ['sometimes'],
+            'monto_sug_pres' => ['sometimes','numeric'],
         ];
     }
 }

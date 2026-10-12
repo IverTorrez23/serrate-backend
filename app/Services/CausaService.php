@@ -195,7 +195,7 @@ class CausaService
         return $total;
     }
 
-    public function noPasoValidacionEAPECausa($causaId, $montoProbable): bool
+    public function noPasoValidacionEAPECausa($causaId, $montoProbable, $presupuestoSugerido): bool
     {
         $causa = Causa::findOrFail($causaId);
         $idUserCausa = $causa->usuario_id;
@@ -204,12 +204,12 @@ class CausaService
         //Si la causa tiene billetera individual, se hace un calculo de una causa
         if ($causa->tiene_billetera === 1) {
             $montoComprometido = $this->obtenerDineroComprometidoCausa($causaId);
-            $montoTotalProbableComprometido = $montoComprometido + $montoProbable;
+            $montoTotalProbableComprometido = $montoComprometido + $montoProbable + $presupuestoSugerido;
             $saldoTotal = $causa->billetera;
         } else { //si no tiene billetera, se hace un calculo de las causas sin billeteras y billetera  del usuario
             $billetera = $this->billeteraService->obtenerUnoPorAbogadoId($idUserCausa);
             $montoComprometido = $this->obtenerTotalComprometidoSinBilletera($idUserCausa);
-            $montoTotalProbableComprometido = $montoComprometido + $montoProbable;
+            $montoTotalProbableComprometido = $montoComprometido + $montoProbable + $presupuestoSugerido;
             $saldoTotal = $billetera->monto;
         }
         //Bloqueo de Causa cuando no pasa EAP

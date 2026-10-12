@@ -25,6 +25,8 @@ use Illuminate\Support\Facades\Log;
 use App\Constants\GlosaTransaccion;
 use App\Constants\TipoTransaccion;
 use App\Constants\Transaccion;
+use App\Services\SugerenciaGastoService;
+use App\Services\SugerenciaOrdenService;
 use App\Services\TransaccionesContadorService;
 
 class PresupuestoController extends Controller
@@ -35,13 +37,18 @@ class PresupuestoController extends Controller
     protected $cotizacionService;
     protected $causaService;
     protected $transaccionesContadorService;
+    protected $sugerenciaOrdenService;
+    protected $sugerenciaGastoService;
+
     public function __construct(
         PresupuestoService $presupuestoService,
         OrdenService $ordenService,
         MatrizCotizacionService $matrizCotizacionService,
         CotizacionService $cotizacionService,
         CausaService $causaService,
-        TransaccionesContadorService $transaccionesContadorService
+        TransaccionesContadorService $transaccionesContadorService,
+        SugerenciaOrdenService $sugerenciaOrdenService,
+        SugerenciaGastoService $sugerenciaGastoService
     ) {
         $this->presupuestoService = $presupuestoService;
         $this->ordenService = $ordenService;
@@ -49,6 +56,8 @@ class PresupuestoController extends Controller
         $this->cotizacionService = $cotizacionService;
         $this->causaService = $causaService;
         $this->transaccionesContadorService = $transaccionesContadorService;
+        $this->sugerenciaGastoService = $sugerenciaGastoService;
+        $this->sugerenciaOrdenService = $sugerenciaOrdenService;
     }
     /**
      * Display a listing of the resource.
@@ -93,10 +102,10 @@ class PresupuestoController extends Controller
         }
         $montoTotalParaValidacion = $diferenciaCotizacion + $request->monto;
         if ($montoTotalParaValidacion > 0) {
-            if ($this->causaService->noPasoValidacionEAPECausa($orden->causa_id, $montoTotalParaValidacion)) {
+            if ($this->causaService->noPasoValidacionEAPECausa($orden->causa_id, $montoTotalParaValidacion, 0)) {
                 return response()->json([
                     'message' => 'ALERTA!
-                 Su solicitud no puede concretarse por falta de saldo en la billetera. Por favor, agregue saldo y luego vuelva a intentarlo.',
+                 Su solicitud no puede concretarse por falta de saldo disponible en la billetera. Por favor, agregue saldo y luego vuelva a intentarlo.',
                     'data' => null
                 ], 409);
             }
@@ -136,6 +145,42 @@ class PresupuestoController extends Controller
                 'prioridad' => $matrizCotizacion->numero_prioridad
             ];
             $cotizacion = $this->cotizacionService->update($dataCotizacion, $cotizacion->id);
+
+
+            //registro de sugerencia de presupuesto recien creadas
+            foreach (
+                $request->input('sugerencias_temporales', [])
+                as $sugerencia
+            ) {
+                $data = [
+                    'detalle' => $sugerencia['detalle'],
+                    'monto' => $sugerencia['monto'],
+                    'orden_id' => $orden->id,
+                    'usuario_id' => Auth::user()->id,
+                ];
+                $sugerenciaGasto = $this->sugerenciaGastoService->store($data);
+                //registro en la tabla sugerencia_ordens
+
+                $dataSugOr = [
+                    'orden_id' => $orden->id,
+                    'sugerencia_gasto_id' => $sugerenciaGasto->id,
+                    'usuario_id' => Auth::user()->id,
+                ];
+                $sugerenciaOrden = $this->sugerenciaOrdenService->store($dataSugOr);
+            }
+
+            //registro de las segerencias generales a la orden
+            foreach (
+                $request->input('sugerencias_seleccionadas', [])
+                as $sugerencia
+            ) {
+                $dataSugOr = [
+                    'orden_id' => $orden->id,
+                    'sugerencia_gasto_id' => $sugerencia['id'],
+                    'usuario_id' => Auth::user()->id,
+                ];
+                $sugerenciaOrden = $this->sugerenciaOrdenService->store($dataSugOr);
+            }
             DB::commit();
             return response()->json([
                 'message' => MessageHttp::CREADO_CORRECTAMENTE,
@@ -181,34 +226,44 @@ class PresupuestoController extends Controller
             'monto',
             'detalle_presupuesto',
         ]);
-        if (!$presupuesto->fecha_entrega) {
-            $montoDiferenciaPresupuestoNew = 0;
-            $diferenciaCotizacion = 0;
-            $totalDiferenciaMonto = 0;
-            //Si se aumenta en presupuesto 
-            if ($request->monto > $presupuesto->monto) {
-                $montoDiferenciaPresupuestoNew = $request->monto - $presupuesto->monto;
-            }
+        if ($presupuesto->fecha_entrega) {
+            return response()->json([
+                'message' => 'ALERTA!
+                 Presupuesto entregado, no se puede modificar el presupuesto.',
+                'data' => null
+            ], 409);
+        }
 
-            $orden =  Orden::findOrFail($presupuesto->orden_id);
-            //Si se cambia la prioridad por otra
-            if ($request->prioridad < $orden->prioridad) {
-                $cotizacion = $this->cotizacionService->obtenerPorIdOrden($presupuesto->orden_id);
-                $matrizCotizacion = $this->matrizCotizacionService->obtenerIdDePrioridadYCondicion($request->prioridad, $cotizacion->condicion);
 
-                $diferenciaCotizacion = $matrizCotizacion->precio_venta - $cotizacion->venta;
-            }
-            $totalDiferenciaMonto = $montoDiferenciaPresupuestoNew + $diferenciaCotizacion;
-            if ($totalDiferenciaMonto > 0) {
-                if ($this->causaService->noPasoValidacionEAPECausa($orden->causa_id, $totalDiferenciaMonto)) {
-                    return response()->json([
-                        'message' => 'ALERTA!
-                     Su solicitud no puede concretarse por falta de saldo en la billetera. Por favor, agregue saldo y luego vuelva a intentarlo.',
-                        'data' => null
-                    ], 409);
-                }
-            }
+        $montoDiferenciaPresupuestoNew = 0;
+        $diferenciaCotizacion = 0;
+        $totalDiferenciaMonto = 0;
+        //Si se aumenta en presupuesto 
+        if ($request->monto > $presupuesto->monto) {
+            $montoDiferenciaPresupuestoNew = $request->monto - $presupuesto->monto;
+        }
 
+        $orden =  Orden::findOrFail($presupuesto->orden_id);
+        //Si se cambia la prioridad por otra
+        if ($request->prioridad < $orden->prioridad) {
+            $cotizacion = $this->cotizacionService->obtenerPorIdOrden($presupuesto->orden_id);
+            $matrizCotizacion = $this->matrizCotizacionService->obtenerIdDePrioridadYCondicion($request->prioridad, $cotizacion->condicion);
+
+            $diferenciaCotizacion = $matrizCotizacion->precio_venta - $cotizacion->venta;
+        }
+        $totalDiferenciaMonto = $montoDiferenciaPresupuestoNew + $diferenciaCotizacion;
+        if ($totalDiferenciaMonto > 0) {
+            if ($this->causaService->noPasoValidacionEAPECausa($orden->causa_id, $totalDiferenciaMonto, 0)) {
+                return response()->json([
+                    'message' => 'ALERTA!
+                     Su solicitud no puede concretarse por falta de saldo disponible en la billetera. Por favor, agregue saldo y luego vuelva a intentarlo.',
+                    'data' => null
+                ], 409);
+            }
+        }
+
+        DB::beginTransaction();
+        try {
 
             $presupuesto = $this->presupuestoService->update($data, $presupuesto->id);
 
@@ -232,18 +287,56 @@ class PresupuestoController extends Controller
                 ];
                 $cotizacion = $this->cotizacionService->update($dataCotizacion, $cotizacion->id);
             }
-        } else {
+
+            //registro de sugerencia de presupuesto recien creadas
+            foreach (
+                $request->input('sugerencias_temporales', [])
+                as $sugerencia
+            ) {
+                $data = [
+                    'detalle' => $sugerencia['detalle'],
+                    'monto' => $sugerencia['monto'],
+                    'orden_id' => $presupuesto->orden_id,
+                    'usuario_id' => Auth::user()->id,
+                ];
+                $sugerenciaGasto = $this->sugerenciaGastoService->store($data);
+                //registro en la tabla sugerencia_ordens
+
+                $dataSugOr = [
+                    'orden_id' => $presupuesto->orden_id,
+                    'sugerencia_gasto_id' => $sugerenciaGasto->id,
+                    'usuario_id' => Auth::user()->id,
+                ];
+                $sugerenciaOrden = $this->sugerenciaOrdenService->store($dataSugOr);
+            }
+
+            //registro de las segerencias generales a la orden
+            foreach (
+                $request->input('sugerencias_seleccionadas', [])
+                as $sugerencia
+            ) {
+                $dataSugOr = [
+                    'orden_id' => $presupuesto->orden_id,
+                    'sugerencia_gasto_id' => $sugerencia['id'],
+                    'usuario_id' => Auth::user()->id,
+                ];
+                $sugerenciaOrden = $this->sugerenciaOrdenService->store($dataSugOr);
+            }
+
+            DB::commit();
             return response()->json([
-                'message' => 'ALERTA!
-                 Presupuesto entregado, no se puede modificar el presupuesto.',
-                'data' => null
-            ], 409);
+                'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
+                'data' => $presupuesto
+            ], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Error registrar descarga: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Error registrar descarga',
+                'error' => $e->getMessage()
+            ], 500);
         }
-        $data = [
-            'message' => MessageHttp::ACTUALIZADO_CORRECTAMENTE,
-            'data' => $presupuesto
-        ];
-        return response()->json($data);
     }
 
     /**

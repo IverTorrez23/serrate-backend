@@ -46,6 +46,8 @@ use App\Http\Controllers\ParametroVigenciaController;
 use App\Http\Controllers\ProcuradorPagoController;
 use App\Http\Controllers\RegistroLlamadaController;
 use App\Http\Controllers\RetiroController;
+use App\Http\Controllers\SugerenciaGastoController;
+use App\Http\Controllers\SugerenciaOrdenController;
 use App\Http\Controllers\TransaccionesAdminController;
 use App\Http\Controllers\TransaccionesCausaController;
 use App\Http\Controllers\TransaccionesContadorController;
@@ -478,5 +480,14 @@ Route::prefix('v1')->group(function () {
         Route::get('cupon/paquete/{paqueteId}', [CuponController::class, 'listadoPorPaquete']);
         Route::post('cupon/canjear', [CuponController::class, 'canjear']);
         Route::patch('cupon/eliminar/{cupon}', [CuponController::class, 'destroy']);
+        //Sugerencia gastos
+        Route::get('sugerencia-gastos', [SugerenciaGastoController::class, 'index']); 
+        Route::post('sugerencia-gastos', [SugerenciaGastoController::class, 'store']);
+        Route::patch('sugerencia-gastos/{sugerenciaGasto}', [SugerenciaGastoController::class, 'update']);
+        Route::patch('sugerencia-gastos/eliminar/{sugerenciaGasto}', [SugerenciaGastoController::class, 'destroy']);
+        Route::get('sugerencia-gastos/listar/generales', [SugerenciaGastoController::class, 'listarActivosGenerales']); 
+        Route::get('sugerencia-gastos/listar/{ordenId}', [SugerenciaGastoController::class, 'listarActivosYConOrden']); 
+        //Sugerencia orden
+        Route::get('sugerencia-orden/{ordenId}', [SugerenciaOrdenController::class, 'listarPorOrden']);
     });
 });

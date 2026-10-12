@@ -32,6 +32,7 @@ class Orden extends Model
         'procurador_id',
         'matriz_id',
         'usuario_id',
+        'monto_sug_pres',
         'estado',
         'es_eliminado'
     ];
