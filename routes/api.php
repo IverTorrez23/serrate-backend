@@ -43,6 +43,7 @@ use App\Http\Controllers\BilleteraController;
 use App\Http\Controllers\CuponController;
 use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\ParametroVigenciaController;
+use App\Http\Controllers\PlantillaInformacionController;
 use App\Http\Controllers\ProcuradorPagoController;
 use App\Http\Controllers\RegistroLlamadaController;
 use App\Http\Controllers\RetiroController;
@@ -489,5 +490,12 @@ Route::prefix('v1')->group(function () {
         Route::get('sugerencia-gastos/listar/{ordenId}', [SugerenciaGastoController::class, 'listarActivosYConOrden']); 
         //Sugerencia orden
         Route::get('sugerencia-orden/{ordenId}', [SugerenciaOrdenController::class, 'listarPorOrden']);
+        //Plantilla de informacion
+        Route::get('plantilla-informacion', [PlantillaInformacionController::class, 'index']); 
+        Route::post('plantilla-informacion', [PlantillaInformacionController::class, 'store']);
+        Route::patch('plantilla-informacion/{plantillaInformacion}', [PlantillaInformacionController::class, 'update']);
+        Route::patch('plantilla-informacion/eliminar/{plantillaInformacion}', [PlantillaInformacionController::class, 'destroy']);
+        Route::get('plantilla-informacion/listar', [PlantillaInformacionController::class, 'listarActivos']); 
+
     });
 });
